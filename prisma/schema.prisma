@@ -1,0 +1,169 @@
+// HenCount schema — shared "Agro base" models (docs/00-global.md §3)
+// MINUS InventoryItem (HenCount has its own stock model: the eggs in hand,
+// see docs/03-hencount.md) PLUS Flock, DayLog, EggSale and FeedPrice.
+//
+// Conventions:
+// - Money is integer kobo (₦1 = 100 kobo). Never floats.
+// - Calendar days use @db.Date; timestamps use timestamptz.
+// - feedKg is a Float: a day's feed is logged to a decimal (e.g. 11.8 kg).
+// - Range rules that must always hold (hens ≥ 1, eggs ≥ 0, feedKg > 0,
+//   sale eggs > 0) are CHECK constraints added to the migration, so a bad
+//   row cannot be written even by a script or by hand.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// The market catalog crops (docs/00-global.md §3). HenCount prices EGGS_TRAY.
+enum Crop {
+  MAIZE
+  CASSAVA
+  YAM
+  RICE_PADDY
+  TOMATO
+  TILAPIA
+  CATFISH
+  EGGS_TRAY
+  PALM_OIL
+}
+
+/// Price unit for a crop. Eggs are priced per tray of 30, palm oil per litre.
+enum Unit {
+  KG
+  TRAY
+  LITRE
+}
+
+/// Where a price or weather reading came from. Shown as a badge in the UI.
+enum PriceSource {
+  SIMULATED
+  LIVE
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  passHash  String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  farms Farm[]
+
+  @@map("users")
+}
+
+model Farm {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  lat       Float
+  lon       Float
+  currency  String   @default("NGN")
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flocks      Flock[]
+  feedPrices  FeedPrice[]
+  weather     WeatherSnapshot[]
+
+  @@index([userId])
+  @@map("farms")
+}
+
+/// One generated (or fetched) price for one crop on one calendar day.
+/// unique(crop, date) makes the generator safe to re-run for the same day.
+model PriceTick {
+  id        String      @id @default(cuid())
+  crop      Crop
+  date      DateTime    @db.Date
+  priceKobo Int
+  unit      Unit
+  source    PriceSource @default(SIMULATED)
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@unique([crop, date])
+  @@map("price_ticks")
+}
+
+/// Cached weather response, so a failed API call can still show "Saved data".
+model WeatherSnapshot {
+  id        String   @id @default(cuid())
+  farmId    String
+  fetchedAt DateTime @default(now()) @db.Timestamptz(3)
+  source    String
+  payload   Json
+
+  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@index([farmId, fetchedAt])
+  @@map("weather_snapshots")
+}
+
+/// A group of laying hens on the farm (docs/03-hencount.md).
+model Flock {
+  id        String   @id @default(cuid())
+  farmId    String
+  name      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  farm   Farm       @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  logs   DayLog[]
+  sales  EggSale[]
+
+  @@unique([farmId, name])
+  @@map("flocks")
+}
+
+/// What happened with one flock on one calendar day: hens present, eggs
+/// collected, feed used. Saving the same day again overwrites (unique on
+/// flockId + date). hens ≥ 1, eggs ≥ 0, feedKg > 0 are CHECK constraints.
+model DayLog {
+  id       String   @id @default(cuid())
+  flockId  String
+  date     DateTime @db.Date
+  hens     Int
+  eggs     Int
+  feedKg   Float
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  flock Flock @relation(fields: [flockId], references: [id], onDelete: Cascade)
+
+  @@unique([flockId, date])
+  @@index([flockId, date])
+  @@map("day_logs")
+}
+
+/// Eggs sold on a day, at the price per tray of 30 they fetched.
+/// Stock = Σ eggs laid − Σ eggs sold; selling more than stock is rejected
+/// in /lib/eggs.ts (cross-row, so it cannot be a CHECK constraint).
+model EggSale {
+  id                String   @id @default(cuid())
+  flockId           String
+  date              DateTime @db.Date
+  eggs              Int
+  pricePerTrayKobo  Int
+  createdAt         DateTime @default(now()) @db.Timestamptz(3)
+
+  flock Flock @relation(fields: [flockId], references: [id], onDelete: Cascade)
+
+  @@index([flockId, date])
+  @@map("egg_sales")
+}
+
+/// What a kg of feed costs on this farm, in kobo (₦1,100/kg = 110000).
+model FeedPrice {
+  id        String   @id @default(cuid())
+  farmId    String
+  priceKobo Int
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  farm Farm @relation(fields: [farmId], references: [id], onDelete: Cascade)
+
+  @@unique([farmId])
+  @@map("feed_prices")
+}
