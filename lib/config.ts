@@ -12,6 +12,17 @@ export const WEATHER = {
   forecastDays: 5,
 } as const;
 
+export const EGGS = {
+  /** Eggs in one tray (the market unit for EGGS_TRAY). */
+  perTray: 30,
+  /** Advice needs at least this many day logs (docs/03-hencount.md). */
+  adviceMinLogs: 3,
+  /** Average laying rate below this % counts as "few eggs" (sample). */
+  layingRateMinPct: 60,
+  /** Average feed per hen above this g/day counts as "too much feed" (sample). */
+  feedPerHenMaxG: 140,
+} as const;
+
 export const ALERTS = {
   /** forecast maxC ≥ 34 → heat alert (docs/03-hencount.md). */
   heatMaxC: 34,
