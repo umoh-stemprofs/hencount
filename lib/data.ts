@@ -40,6 +40,20 @@ export interface FlockWithRows {
   sales: EggSaleRow[];
 }
 
+export interface EggSaleFullRow {
+  id: string;
+  date: Date;
+  eggs: number;
+  pricePerTrayKobo: number;
+}
+
+/** One flock plus the two facts the ownership check needs. */
+export interface OwnedFlock extends FlockWithRows {
+  farmId: string;
+  farm: { userId: string };
+  sales: EggSaleFullRow[];
+}
+
 /** The narrow slice of PrismaClient these reads need (see defaultDb below). */
 export interface DataDb {
   farm: {
@@ -47,6 +61,7 @@ export interface DataDb {
   };
   flock: {
     findMany(args: Record<string, unknown>): Promise<FlockWithRows[]>;
+    findFirst(args: Record<string, unknown>): Promise<OwnedFlock | null>;
   };
 }
 
@@ -75,6 +90,28 @@ export async function requireFarmForUser(
   if (!farm) throw new Error("Farm not found.");
   if (farm.userId !== userId) throw new NotAuthorizedError();
   return farm;
+}
+
+/**
+ * One flock, but only for the farmer who owns its farm. Every egg action
+ * goes through this before touching a log or a sale (00-global.md §3).
+ */
+export async function getFlockForUser(
+  flockId: string,
+  userId: string,
+  database: DataDb = defaultDb,
+): Promise<OwnedFlock> {
+  const flock = await database.flock.findFirst({
+    where: { id: flockId },
+    include: {
+      farm: { select: { userId: true } },
+      logs: { orderBy: { date: "asc" } },
+      sales: { orderBy: { date: "asc" } },
+    },
+  });
+  if (!flock) throw new Error("Flock not found.");
+  if (flock.farm.userId !== userId) throw new NotAuthorizedError();
+  return flock;
 }
 
 /** All flocks (with logs, oldest first, and sales) of ONE owned farm. */

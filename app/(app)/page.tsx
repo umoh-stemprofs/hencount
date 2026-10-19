@@ -3,7 +3,7 @@
 // the egg tray price card and weather card with their data-source badges,
 // and a heat alert banner when a hot day is forecast. No charts yet (step 5).
 import { Crop } from "@prisma/client";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 import Link from "next/link";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { EggPriceCard, loadEggPrice } from "@/components/EggPriceCard";
@@ -31,8 +31,9 @@ export default async function DashboardPage() {
 
   let stats: DashboardStats | null = null;
   let feedPriceKobo: number | null = null;
+  let flocks: Awaited<ReturnType<typeof getFlocksForFarm>> = [];
   if (farm) {
-    const flocks = await getFlocksForFarm(farm.id, user.userId);
+    flocks = await getFlocksForFarm(farm.id, user.userId);
     const feedPrice = await db.feedPrice.findUnique({
       where: { farmId: farm.id },
     });
@@ -58,12 +59,22 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <header>
-        <h1 className="text-2xl font-semibold text-text">Dashboard</h1>
-        <p className="mt-1 max-w-[70ch] leading-6 text-muted">
-          Welcome back, {user.name.split(" ")[0]}.{" "}
-          {farm ? farm.name : "Set up your farm in Settings to personalise this."}
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-text">Dashboard</h1>
+          <p className="mt-1 max-w-[70ch] leading-6 text-muted">
+            Welcome back, {user.name.split(" ")[0]}.{" "}
+            {farm ? farm.name : "Set up your farm in Settings to personalise this."}
+          </p>
+        </div>
+        {/* The one main action on this screen (design.md §2). */}
+        <Link
+          href={flocks[0] ? `/eggs/${flocks[0].id}/add` : "/eggs"}
+          className="inline-flex h-12 items-center gap-2 rounded-input bg-accent px-5 text-base font-semibold text-white"
+        >
+          <Plus className="h-5 w-5" aria-hidden="true" />
+          Add today
+        </Link>
       </header>
 
       {/* Alerts banner (design.md §2): heat when a hot day is forecast. */}

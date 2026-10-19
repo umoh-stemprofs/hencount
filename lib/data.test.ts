@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   NotAuthorizedError,
   getFarmForUser,
+  getFlockForUser,
   getFlocksForFarm,
   requireFarmForUser,
   type DataDb,
@@ -40,6 +41,18 @@ function stubDb(ownerUserId: string | null) {
         flockQueries += 1;
         return [{ id: "flock_1", name: "Layers", logs: [], sales: [] }];
       },
+      findFirst: async (args) => {
+        const where = args.where as { id?: string };
+        if (where.id !== "flock_1") return null;
+        return {
+          id: "flock_1",
+          farmId: farmA.id,
+          name: "Layers",
+          logs: [],
+          sales: [],
+          farm: { userId: ownerUserId ?? "nobody" },
+        };
+      },
     },
   };
   return { database, flockQueries: () => flockQueries };
@@ -59,6 +72,15 @@ describe("ownership — a farmer sees only their farm", () => {
     const flocks = await getFlocksForFarm("farm_a", "usr_a", database);
     expect(flocks).toHaveLength(1);
     expect(flockQueries()).toBe(1);
+  });
+
+  it("getFlockForUser returns a flock only to the farm's owner", async () => {
+    const { database } = stubDb("usr_a");
+    const flock = await getFlockForUser("flock_1", "usr_a", database);
+    expect(flock.id).toBe("flock_1");
+    await expect(
+      getFlockForUser("flock_1", "usr_b", database),
+    ).rejects.toBeInstanceOf(NotAuthorizedError);
   });
 
   it("getFarmForUser returns a farm only to its owner", async () => {

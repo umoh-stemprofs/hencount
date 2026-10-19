@@ -39,6 +39,48 @@ export const farmSchema = z.object({
     .max(1_000_000, "Feed price looks too big. Check it."),
 });
 
+export const flockSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Enter a flock name.")
+    .max(40, "Keep the flock name under 40 characters."),
+});
+
+/** Hens, eggs and feed arrive as strings from number inputs. */
+export const dayLogSchema = z.object({
+  flockId: z.string().min(1, "Choose a flock."),
+  hens: z.coerce
+    .number({ invalid_type_error: "Hens must be a number." })
+    .int("Hens must be a whole number of at least 1.")
+    .min(1, "Hens must be a whole number of at least 1.")
+    .max(100_000, "Hens looks too big. Check it."),
+  eggs: z.coerce
+    .number({ invalid_type_error: "Eggs must be a number." })
+    .int("Eggs must be a whole number of 0 or more.")
+    .min(0, "Eggs must be a whole number of 0 or more.")
+    .max(100_000, "Eggs looks too big. Check it."),
+  feedKg: z.coerce
+    .number({ invalid_type_error: "Feed must be a number of kg." })
+    .positive("Feed must be more than 0 kg.")
+    .max(10_000, "Feed looks too big. Check it."),
+});
+
+export const eggSaleSchema = z.object({
+  flockId: z.string().min(1, "Choose a flock."),
+  eggs: z.coerce
+    .number({ invalid_type_error: "Eggs sold must be a number." })
+    .int("Eggs sold must be a whole number of 1 or more.")
+    .min(1, "Eggs sold must be a whole number of 1 or more."),
+  pricePerTrayNaira: z.coerce
+    .number({ invalid_type_error: "Price per tray must be a number of naira." })
+    .positive("Price per tray must be more than ₦0.")
+    .max(1_000_000, "Price per tray looks too big. Check it."),
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type FarmInput = z.infer<typeof farmSchema>;
+export type FlockInput = z.infer<typeof flockSchema>;
+export type DayLogInput = z.infer<typeof dayLogSchema>;
+export type EggSaleInput = z.infer<typeof eggSaleSchema>;
