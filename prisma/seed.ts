@@ -1,14 +1,22 @@
 import "dotenv/config";
 import { Crop, PrismaClient, Unit } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { formatNaira } from "../lib/dates";
 
 /**
  * Seed for step 1: one farmer, one farm, feed price, seven days of simulated
  * egg-tray prices, and ONE FLOCK PER ADVICE STATE — KEEP_ADDING, "few eggs",
  * "too much feed" and GOOD — so every result state of docs/03-hencount.md
- * can be seen from day one.
+ * can be seen from day one. Two more flocks complete the step-5 demo:
+ * "Harbour layers" has a LOSS day (eggs crashed, feed did not), so its profit
+ * chart shows red between green days, and the tiny "Kitchen coop" is the
+ * sixth flock, which makes the dashboard's value pie show its "Other" slice
+ * (max 5 slices).
  *
  * Idempotent: running it twice leaves the same rows, not duplicates.
+ * Re-running also removes day logs and sales that are not listed below —
+ * e.g. rows a click-through left behind — but it never deletes a flock it
+ * does not know.
  * Demo password is documented in README.md only.
  */
 
@@ -26,8 +34,11 @@ const DEMO = {
   lon: 7.0498,
 };
 
-// ₦1,100 per kg of feed = 110,000 kobo. Placeholder: confirm with the farm.
-const FEED_PRICE_KOBO = 110000;
+// ₦650 per kg of feed = 65,000 kobo. SAMPLE (00-global.md §2): the number is
+// chosen so the demo shows BOTH profit and loss days against the catalog
+// tray price ₦3,800 — the healthy flocks earn, the weak ones lose — and it
+// must be confirmed with the farm before real use.
+const FEED_PRICE_KOBO = 65000;
 
 /** Today's calendar day in APP_TZ, never the server's clock zone. */
 function todayInAppTz(): Date {
@@ -61,8 +72,19 @@ const EGG_PRICE_SERIES_KOBO = [372000, 375000, 374000, 378000, 379000, 381000, 3
  *   TOO_MUCH    3 logs · avg rate 84.6% ≥ 60, feed/hen ~170 g > 140
  *               → "Too much feed. Give a little less."
  *   KEEP_ADDING only 2 logs → "Add 3 days to see advice."
+ *
+ * Two step-5 extras:
+ *   Loss day     "Harbour layers" is GOOD but laid only 35 eggs yesterday
+ *                while eating its usual feed, so that day's profit is a
+ *                clear loss — red between green days on the profit chart.
+ *   Other slice  "Kitchen coop" (25 hens) is the sixth flock; more than 5
+ *                flocks makes the dashboard's value pie group the tail into
+ *                "Other".
  */
-type SeedLog = { id: string; day: number; hens: number; eggs: number; feedKg: number };
+// No ids on logs: they are keyed by the schema's unique (flockId, date), so
+// re-running on a LATER day slides the whole window forward instead of
+// colliding on a hardcoded id (the step-1 seed broke on day two).
+type SeedLog = { day: number; hens: number; eggs: number; feedKg: number };
 
 type SeedFlock = {
   id: string;
@@ -76,13 +98,13 @@ const FLOCKS: SeedFlock[] = [
     id: "flock_good",
     name: "Mango Creek layers",
     logs: [
-      { id: "log_good_d6", day: 6, hens: 100, eggs: 84, feedKg: 11.8 },
-      { id: "log_good_d5", day: 5, hens: 100, eggs: 86, feedKg: 12.1 },
-      { id: "log_good_d4", day: 4, hens: 100, eggs: 83, feedKg: 11.9 },
-      { id: "log_good_d3", day: 3, hens: 100, eggs: 85, feedKg: 12.0 },
-      { id: "log_good_d2", day: 2, hens: 100, eggs: 82, feedKg: 11.7 },
-      { id: "log_good_d1", day: 1, hens: 100, eggs: 84, feedKg: 11.9 },
-      { id: "log_good_d0", day: 0, hens: 100, eggs: 85, feedKg: 12.0 },
+      { day: 6, hens: 100, eggs: 84, feedKg: 11.8 },
+      { day: 5, hens: 100, eggs: 86, feedKg: 12.1 },
+      { day: 4, hens: 100, eggs: 83, feedKg: 11.9 },
+      { day: 3, hens: 100, eggs: 85, feedKg: 12.0 },
+      { day: 2, hens: 100, eggs: 82, feedKg: 11.7 },
+      { day: 1, hens: 100, eggs: 84, feedKg: 11.9 },
+      { day: 0, hens: 100, eggs: 85, feedKg: 12.0 },
     ],
     // 589 laid total; 210 sold → stock 379 eggs. Never sells more than stock.
     sales: [
@@ -94,18 +116,18 @@ const FLOCKS: SeedFlock[] = [
     id: "flock_few",
     name: "Palm Grove layers",
     logs: [
-      { id: "log_few_d2", day: 2, hens: 120, eggs: 58, feedKg: 14.4 },
-      { id: "log_few_d1", day: 1, hens: 120, eggs: 61, feedKg: 14.2 },
-      { id: "log_few_d0", day: 0, hens: 120, eggs: 60, feedKg: 14.5 },
+      { day: 2, hens: 120, eggs: 58, feedKg: 14.4 },
+      { day: 1, hens: 120, eggs: 61, feedKg: 14.2 },
+      { day: 0, hens: 120, eggs: 60, feedKg: 14.5 },
     ],
   },
   {
     id: "flock_too_much",
     name: "Creek Side layers",
     logs: [
-      { id: "log_much_d2", day: 2, hens: 80, eggs: 66, feedKg: 13.5 },
-      { id: "log_much_d1", day: 1, hens: 80, eggs: 68, feedKg: 13.6 },
-      { id: "log_much_d0", day: 0, hens: 80, eggs: 69, feedKg: 13.7 },
+      { day: 2, hens: 80, eggs: 66, feedKg: 13.5 },
+      { day: 1, hens: 80, eggs: 68, feedKg: 13.6 },
+      { day: 0, hens: 80, eggs: 69, feedKg: 13.7 },
     ],
     // 203 laid total; 60 sold → stock 143 eggs.
     sales: [{ id: "sale_much_1", day: 1, eggs: 60, pricePerTrayKobo: 380000 }],
@@ -114,13 +136,33 @@ const FLOCKS: SeedFlock[] = [
     id: "flock_new",
     name: "Point of lay pullets",
     logs: [
-      { id: "log_new_d1", day: 1, hens: 150, eggs: 95, feedKg: 17.5 },
-      { id: "log_new_d0", day: 0, hens: 150, eggs: 98, feedKg: 17.8 },
+      { day: 1, hens: 150, eggs: 95, feedKg: 17.5 },
+      { day: 0, hens: 150, eggs: 98, feedKg: 17.8 },
+    ],
+  },
+  {
+    // GOOD advice, but yesterday's eggs crashed (35) while feed stayed the
+    // same → that day's profit is a loss. The demo's red day on the chart.
+    id: "flock_harbour",
+    name: "Harbour layers",
+    logs: [
+      { day: 2, hens: 120, eggs: 100, feedKg: 12.5 },
+      { day: 1, hens: 120, eggs: 35, feedKg: 12.5 },
+      { day: 0, hens: 120, eggs: 100, feedKg: 12.5 },
+    ],
+  },
+  {
+    // The sixth flock: keeps the value pie at its 5-slice limit so the tail
+    // shows up as "Other" (design.md §4).
+    id: "flock_kitchen",
+    name: "Kitchen coop",
+    logs: [
+      { day: 2, hens: 25, eggs: 19, feedKg: 2.6 },
+      { day: 1, hens: 25, eggs: 21, feedKg: 2.7 },
+      { day: 0, hens: 25, eggs: 20, feedKg: 2.8 },
     ],
   },
 ];
-
-const naira = (kobo: number) => `₦${(kobo / 100).toLocaleString("en-NG")}`;
 
 async function main() {
   const passHash = await hash(DEMO.password, 10);
@@ -182,7 +224,7 @@ async function main() {
       await db.dayLog.upsert({
         where: { flockId_date: { flockId: flock.id, date } },
         update: data,
-        create: { id: log.id, flockId: flock.id, date, ...data },
+        create: { flockId: flock.id, date, ...data },
       });
     }
 
@@ -197,11 +239,17 @@ async function main() {
     }
   }
 
-  // Make a re-run converge on exactly this demo data.
+  // Make a re-run converge on exactly this demo data: every log of a seed
+  // flock must sit on THAT flock's own window for this run (the window
+  // slides each day), so leftovers a click-through left behind — old dates,
+  // extra days — go, while flocks the seed does not know are never touched.
   const flockIds = FLOCKS.map((f) => f.id);
-  await db.dayLog.deleteMany({
-    where: { flockId: { in: flockIds }, id: { notIn: FLOCKS.flatMap((f) => f.logs.map((l) => l.id)) } },
-  });
+  for (const flock of FLOCKS) {
+    const ownDates = flock.logs.map((log) => daysAgo(log.day));
+    await db.dayLog.deleteMany({
+      where: { flockId: flock.id, date: { notIn: ownDates } },
+    });
+  }
   await db.eggSale.deleteMany({
     where: {
       flockId: { in: flockIds },
@@ -227,13 +275,13 @@ async function main() {
 
   console.log(`\nFarm   ${farm.name} (${farm.lat}, ${farm.lon}) · ${farm.currency}`);
   console.log(`User   ${user.name} <${user.email}>`);
-  console.log(`Feed   ${feedPrice ? naira(feedPrice.priceKobo) : "?"} per kg`);
+  console.log(`Feed   ${feedPrice ? formatNaira(feedPrice.priceKobo) : "?"} per kg`);
   console.log(`Prices ${tickCount} egg-tray ticks over ${EGG_PRICE_SERIES_KOBO.length} days (Simulated)`);
   if (latestTick) {
-    console.log(`       latest ${naira(latestTick.priceKobo)} per tray as of ${latestTick.date.toISOString().slice(0, 10)}`);
+    console.log(`       latest ${formatNaira(latestTick.priceKobo)} per tray as of ${latestTick.date.toISOString().slice(0, 10)}`);
   }
 
-  console.log(`\nFlocks ${flocks.length} — one per state:`);
+  console.log(`\nFlocks ${flocks.length} — one per advice state + a loss day + a small coop:`);
   for (const flock of flocks) {
     const laid = flock.logs.reduce((sum, l) => sum + l.eggs, 0);
     const sold = flock.sales.reduce((sum, s) => sum + s.eggs, 0);

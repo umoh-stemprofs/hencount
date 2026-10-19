@@ -31,14 +31,29 @@ export function formatDayShort(date: Date): string {
     .replace(/,/g, "");
 }
 
-/** Money at the edge only: 1250000 kobo → "₦12,500" (00-global.md §2). */
+/** "13 Oct" — compact chart-axis label (design.md §4: axis text ≥ 12 px). */
+export function formatDayAxis(date: Date): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: APP_TZ,
+  })
+    .format(date)
+    .replace(/,/g, "");
+}
+
+/**
+ * Money at the edge only: 1250000 kobo → "₦12,500" (00-global.md §2).
+ *
+ * HenCount is naira-only, so the sign is written by hand instead of through
+ * Intl's currency style: every build renders the exact same "₦12,500",
+ * negative money reads "-₦500", and no locale can ever swap the sign.
+ * This is the only place in the app that turns kobo into display money.
+ */
 export function formatNaira(kobo: number): string {
-  return new Intl.NumberFormat("en-NG", {
-    style: "currency",
-    currency: "NGN",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(kobo / 100);
+  const naira = Math.round(Math.abs(kobo) / 100);
+  const grouped = naira.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return `${kobo < 0 ? "-" : ""}₦${grouped}`;
 }
 
 /** "2 min ago" / "3 h old" / "just now" — for data-source badges. */

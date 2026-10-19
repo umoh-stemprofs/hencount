@@ -1,6 +1,7 @@
 // Advice (docs/03-hencount.md page 4): a status pill with icon and word, the
 // one advice sentence from adviceFor, and three stat cards. Thresholds are
 // samples in /lib/config.ts — a poultry expert must confirm them.
+import { Crop } from "@prisma/client";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -11,9 +12,14 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatCard } from "@/components/StatCard";
+import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { EggBarsCard } from "@/components/charts/EggBarsCard";
+import { ProfitCard } from "@/components/charts/ProfitCard";
 import { loadEggPrice } from "@/components/EggPriceCard";
 import { adviceFor, dayMoney, metricsFor } from "@/lib/eggs";
 import type { AdviceStatus } from "@/lib/eggs";
+import { eggsSeries, profitSeries } from "@/lib/charts";
+import { getMarketProvider } from "@/lib/market/provider";
 import { dateKey, formatNaira, todayInAppTz } from "@/lib/dates";
 import { getFarmForUser, getFlockForUser } from "@/lib/data";
 import { db } from "@/lib/db";
@@ -78,6 +84,45 @@ export default async function AdvicePage({
   const advice = adviceFor(logs);
 
   const today = todayInAppTz();
+
+  // Chart data (step 5): the 7-day series with gaps kept as gaps.
+  const eggPoints = eggsSeries(logs, today, 7);
+  let trayPriceByDate: Record<string, number> = {};
+  try {
+    const history = await getMarketProvider().getHistory(Crop.EGGS_TRAY, 7);
+    trayPriceByDate = Object.fromEntries(
+      history.map((tick) => [tick.date, tick.priceKobo]),
+    );
+  } catch {
+    // No prices → the profit chart shows gaps, never invented numbers.
+    trayPriceByDate = {};
+  }
+  const profitPoints = profitSeries({
+    logs,
+    today,
+    days: 7,
+    trayPriceByDate,
+    feedPriceKobo: feedPrice?.priceKobo ?? null,
+  });
+  const noLogsInWindow = eggPoints.every((point) => point.eggs === null);
+  const eggEmptySentence =
+    logs.length === 0
+      ? "No days logged yet."
+      : "No days logged in the last 7 days.";
+  const profitEmpty = noLogsInWindow
+    ? {
+        sentence: eggEmptySentence,
+        action: { href: `/eggs/${flock.id}/add`, label: "Add today" },
+      }
+    : !feedPrice
+      ? {
+          sentence: "Set your feed price in Settings to see profit.",
+          action: { href: "/settings", label: "Open settings" },
+        }
+      : {
+          sentence: "The tray price is unavailable right now.",
+          action: { href: `/eggs/${flock.id}/advice`, label: "Try again" },
+        };
   const todayLog = logOnDate(flock.logs, today);
   const latestLog = flock.logs.length > 0 ? flock.logs[flock.logs.length - 1] : null;
 
@@ -194,6 +239,26 @@ export default async function AdvicePage({
                   ? "Set your feed price in Settings."
                   : "The tray price is unavailable right now."
           }
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <EggBarsCard
+          id="advice-eggs"
+          title="Eggs per day, last 7 days"
+          badge={<DataSourceBadge kind="saved" />}
+          points={eggPoints}
+          showThreshold
+          emptySentence={eggEmptySentence}
+          emptyAction={{ href: `/eggs/${flock.id}/add`, label: "Add today" }}
+        />
+        <ProfitCard
+          id="advice-profit"
+          title="Profit per day"
+          badge={<DataSourceBadge kind="simulated" detail="tray price" />}
+          points={profitPoints}
+          emptySentence={profitEmpty.sentence}
+          emptyAction={profitEmpty.action}
         />
       </div>
 

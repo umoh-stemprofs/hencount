@@ -3,15 +3,19 @@
 // the egg tray price card and weather card with their data-source badges,
 // and a heat alert banner when a hot day is forecast. No charts yet (step 5).
 import { Crop } from "@prisma/client";
-import { AlertTriangle, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { EggBarsCard } from "@/components/charts/EggBarsCard";
+import { StockPieCard } from "@/components/charts/StockPieCard";
+import { HeatBanner } from "@/components/HeatBanner";
 import { EggPriceCard, loadEggPrice } from "@/components/EggPriceCard";
 import { StatCard } from "@/components/StatCard";
 import { WeatherCard } from "@/components/WeatherCard";
 import { heatAlert } from "@/lib/alerts";
 import { DEFAULT_FARM } from "@/lib/config";
 import { computeDashboard, type DashboardStats } from "@/lib/dashboard";
+import { eggsSeriesAllFlocks, stockValueSlices, type StockSlice } from "@/lib/charts";
 import { dateKey, formatNaira, todayInAppTz } from "@/lib/dates";
 import { getFarmForUser, getFlocksForFarm } from "@/lib/data";
 import { db } from "@/lib/db";
@@ -24,7 +28,9 @@ export default async function DashboardPage() {
   // The session's own user; every read below is scoped to their farm.
   const user = await requireUser();
   const farm = await getFarmForUser(user.userId);
-  const todayKey = dateKey(todayInAppTz());
+  const today = todayInAppTz();
+  const todayKey = dateKey(today);
+  const demoMode = process.env.DEMO_MODE === "true";
 
   const eggPrice = await loadEggPrice();
   const trayPriceKobo = eggPrice.priceKobo;
@@ -32,6 +38,8 @@ export default async function DashboardPage() {
   let stats: DashboardStats | null = null;
   let feedPriceKobo: number | null = null;
   let flocks: Awaited<ReturnType<typeof getFlocksForFarm>> = [];
+  let eggPoints: { date: string; eggs: number | null }[] = [];
+  let stockSlices: StockSlice[] = [];
   if (farm) {
     flocks = await getFlocksForFarm(farm.id, user.userId);
     const feedPrice = await db.feedPrice.findUnique({
@@ -51,7 +59,36 @@ export default async function DashboardPage() {
       trayPriceKobo,
       feedPriceKobo,
     });
+
+    // Chart inputs: raw logs only — /lib/charts.ts keeps the gaps.
+    eggPoints = eggsSeriesAllFlocks(
+      flocks.map((flock) => ({
+        logs: flock.logs.map((log) => ({
+          date: dateKey(log.date),
+          hens: log.hens,
+          eggs: log.eggs,
+          feedKg: log.feedKg,
+        })),
+      })),
+      today,
+      7,
+    );
+    if (trayPriceKobo !== null) {
+      stockSlices = stockValueSlices(
+        flocks.map((flock) => ({
+          name: flock.name,
+          laidEggs: flock.logs.reduce((sum, log) => sum + log.eggs, 0),
+          soldEggs: flock.sales.reduce((sum, sale) => sum + sale.eggs, 0),
+        })),
+        trayPriceKobo,
+      );
+    }
   }
+
+  const addTodayAction = {
+    href: flocks[0] ? `/eggs/${flocks[0].id}/add` : "/eggs",
+    label: "Add today",
+  };
 
   const weatherFarm = farm ?? DEFAULT_FARM;
   const weather = await loadWeather(weatherFarm);
@@ -77,18 +114,9 @@ export default async function DashboardPage() {
         </Link>
       </header>
 
-      {/* Alerts banner (design.md §2): heat when a hot day is forecast. */}
-      {heat && (
-        <p
-          role="status"
-          className="inline-flex items-start gap-2 rounded-card bg-warning-bg px-4 py-3 text-base font-medium text-warning"
-        >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
-          <span>
-            {heat.message} ({heat.date})
-          </span>
-        </p>
-      )}
+      {/* Alerts banner (design.md §2): heat when a hot day is forecast.
+          On a cool day the preview switch appears only when DEMO_MODE=true. */}
+      <HeatBanner heat={heat} demoMode={demoMode} />
 
       {/* Top row: 3 stat cards (S-DASH). */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -142,6 +170,34 @@ export default async function DashboardPage() {
                   : feedPriceKobo === null
                     ? "Set your feed price in Settings to see profit."
                     : "The tray price is unavailable right now."
+          }
+        />
+      </div>
+
+      {/* Charts (step 5): eggs by day and the stock value split (design.md §4). */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <EggBarsCard
+          id="dash-eggs"
+          title="Eggs per day, all flocks, last 7 days"
+          badge={<DataSourceBadge kind="saved" />}
+          points={eggPoints}
+          emptyAction={addTodayAction}
+        />
+        <StockPieCard
+          id="dash-stock-value"
+          title="Share of egg stock value by flock"
+          badge={<DataSourceBadge kind="simulated" />}
+          slices={stockSlices}
+          priceDate={eggPrice.priceDate}
+          emptySentence={
+            trayPriceKobo === null
+              ? "The tray price is unavailable right now."
+              : "No eggs in stock yet."
+          }
+          emptyAction={
+            trayPriceKobo === null
+              ? { href: "/market", label: "Open Market" }
+              : addTodayAction
           }
         />
       </div>

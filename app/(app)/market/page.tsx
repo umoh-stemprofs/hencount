@@ -1,10 +1,11 @@
-// Market (docs/03-hencount.md page 7): the egg tray price with its data-source
-// badge, the change since yesterday, and a 7-day table instead of a chart
-// (charts arrive in step 5).
+// Market (docs/03-hencount.md page 7): the egg tray price with its
+// data-source badge, the change since yesterday, a 7-day table, and the
+// 7/30/90-day line chart (step 5, design.md S-MARKET).
 import { Crop } from "@prisma/client";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
-import { EggPriceCard, loadEggPrice } from "@/components/EggPriceCard";
+import { EggPriceCard } from "@/components/EggPriceCard";
+import { PriceChartCard } from "@/components/charts/PriceChartCard";
 import { formatDayShort, formatNaira } from "@/lib/dates";
 import { getMarketProvider } from "@/lib/market/provider";
 import type { MarketTick } from "@/lib/market/generator";
@@ -17,23 +18,40 @@ const card = "rounded-card border border-border bg-surface p-6 shadow-card";
 export default async function MarketPage() {
   await requireUser();
 
-  const eggPrice = await loadEggPrice();
-
   let history: MarketTick[] | null = null;
   try {
-    history = await getMarketProvider().getHistory(Crop.EGGS_TRAY, 7);
+    // One provider read powers the price card, the table and the chart.
+    history = await getMarketProvider().getHistory(Crop.EGGS_TRAY, 90);
   } catch (error) {
     console.warn("Market history unavailable:", error);
   }
 
-  const rows = (history ?? []).map((tick, index, all) => {
-    const previous = index > 0 ? all[index - 1] : null;
-    const changePct =
-      previous && previous.priceKobo > 0
-        ? ((tick.priceKobo - previous.priceKobo) / previous.priceKobo) * 100
-        : null;
-    return { ...tick, changePct };
-  });
+  const series = (history ?? []).map((tick) => ({
+    date: tick.date,
+    priceKobo: tick.priceKobo,
+  }));
+  const latest = series.length > 0 ? series[series.length - 1] : null;
+  const previous = series.length > 1 ? series[series.length - 2] : null;
+  const eggPrice = {
+    priceKobo: latest?.priceKobo ?? null,
+    priceDate: latest?.date ?? null,
+    changePct:
+      latest && previous && previous.priceKobo > 0
+        ? ((latest.priceKobo - previous.priceKobo) / previous.priceKobo) * 100
+        : null,
+    failed: history === null,
+  };
+
+  const rows = (history ?? [])
+    .map((tick, index, all) => {
+      const previous = index > 0 ? all[index - 1] : null;
+      const changePct =
+        previous && previous.priceKobo > 0
+          ? ((tick.priceKobo - previous.priceKobo) / previous.priceKobo) * 100
+          : null;
+      return { ...tick, changePct };
+    })
+    .slice(-7);
 
   return (
     <div className="space-y-6">
@@ -123,6 +141,15 @@ export default async function MarketPage() {
           </p>
         </section>
       </div>
+
+      <PriceChartCard
+        id="market-price-chart"
+        title="Egg tray price history"
+        badge={<DataSourceBadge kind="simulated" />}
+        series={series}
+        emptySentence="Prices are unavailable right now."
+        emptyAction={{ href: "/market", label: "Try again" }}
+      />
     </div>
   );
 }

@@ -11,6 +11,9 @@ export interface HeatAlert {
   message: string;
 }
 
+/** The banner sentence — shared by the real alert and its demo preview. */
+export const HEAT_MESSAGE = "Hot day. Give cool water. Eggs may drop.";
+
 /** Heat alert when a forecast day's maxC is at or above the threshold. */
 export function heatAlert(daily: WeatherDay[]): HeatAlert | null {
   const hot = daily.find((day) => day.maxC >= ALERTS.heatMaxC);
@@ -19,6 +22,6 @@ export function heatAlert(daily: WeatherDay[]): HeatAlert | null {
     type: "HEAT",
     date: hot.date,
     maxC: hot.maxC,
-    message: "Hot day. Give cool water. Eggs may drop.",
+    message: HEAT_MESSAGE,
   };
 }

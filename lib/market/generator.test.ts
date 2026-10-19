@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { Crop } from "@prisma/client";
 import { CATALOG, getCrop } from "./catalog";
 import { changePctFor, historyFor, priceOn } from "./generator";
-import { addDays, todayInAppTz } from "../dates";
+import { addDays, formatNaira, todayInAppTz } from "../dates";
 
 const EGGS = getCrop(Crop.EGGS_TRAY)!;
 const MAIZE = getCrop(Crop.MAIZE)!;
@@ -61,7 +61,7 @@ describe("trends", () => {
         .slice(1)
         .map((p, i) => (p > series[i] ? "↑" : p < series[i] ? "↓" : "→"))
         .join("");
-      return `${meta.crop.padEnd(12)} ${arrows}  today ₦${(series[series.length - 1] / 100).toLocaleString("en-NG")}`;
+      return `${meta.crop.padEnd(12)} ${arrows}  today ${formatNaira(series[series.length - 1])}`;
     });
     console.log(`\n14-day trends (oldest → today):\n${lines.join("\n")}\n`);
     expect(lines).toHaveLength(CATALOG.length);
