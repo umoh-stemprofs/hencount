@@ -73,7 +73,10 @@ Nothing external is ever called from the browser. API keys live only in
 - Server-side only; hard timeout 5 s; one retry (`lib/weather/http.ts`).
 - Every response is validated with Zod (`lib/weather/schemas.ts`); anything
   unexpected is rejected.
-- Successful responses are cached in `WeatherSnapshot` for 30 minutes.
+- Cached in `WeatherSnapshot` for 30 minutes: a snapshot younger than
+  30 minutes is served **without calling the API** (the badge keeps the
+  green Live dot and shows its age — "Live · updated 12 min ago"). Older
+  snapshots are refetched.
 - On failure: serve the last saved snapshot ("Saved data · X h old"). With no
   snapshot: an error the page shows, and the rest of the app keeps working.
 

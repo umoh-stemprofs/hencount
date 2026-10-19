@@ -18,29 +18,44 @@ export interface MarketProvider {
   /** One crop's history ending today, oldest first (1–90 days). */
   getHistory(crop: Crop, days: number): Promise<MarketTick[]>;
 }/**
- * Persist ticks into PriceTick so the DB mirrors the feed — in three round
- * trips instead of one per row: read what already exists, insert only the
- * missing days in a single batch, then refresh the newest day per crop (the
- * one a page reads). A 90-day chart used to fire 90 sequential upserts and
- * took ~40 s over the connection; the same read now costs one SELECT.
+ * Persist ticks into PriceTick so the DB mirrors the feed — with almost no
+ * round trips when nothing moved: one SELECT to see what already exists,
+ * one batched insert for missing days, and one rewrite per day whose price
+ * actually changed. Pages normally pay only the single SELECT (the same
+ * day's simulated price never changes, so "changed" is usually empty).
+ * Before this, a 90-day chart fired 90 sequential upserts and took ~43 s
+ * over the connection.
  */
 async function persist(ticks: MarketTick[]): Promise<void> {
   if (ticks.length === 0) return;
 
   const asDate = (tick: MarketTick) => new Date(`${tick.date}T00:00:00.000Z`);
+  const keyOf = (crop: Crop, date: string) => `${crop}|${date}`;
   const crops = [...new Set(ticks.map((tick) => tick.crop))];
   const dates = [...new Set(ticks.map(asDate))];
+
   const existing = await db.priceTick.findMany({
     where: { crop: { in: crops }, date: { in: dates } },
-    select: { crop: true, date: true },
+    select: { crop: true, date: true, priceKobo: true, unit: true, source: true },
   });
-  const seen = new Set(
-    existing.map((row) => `${row.crop}|${dateKey(row.date)}`),
+  const known = new Map(
+    existing.map((row) => [keyOf(row.crop, dateKey(row.date)), row]),
   );
 
-  const missing = ticks.filter(
-    (tick) => !seen.has(`${tick.crop}|${tick.date}`),
-  );
+  const missing: MarketTick[] = [];
+  const changed: MarketTick[] = [];
+  for (const tick of ticks) {
+    const row = known.get(keyOf(tick.crop, tick.date));
+    if (!row) missing.push(tick);
+    else if (
+      row.priceKobo !== tick.priceKobo ||
+      row.unit !== tick.unit ||
+      row.source !== tick.source
+    ) {
+      changed.push(tick);
+    }
+  }
+
   if (missing.length > 0) {
     await db.priceTick.createMany({
       data: missing.map((tick) => ({
@@ -54,24 +69,11 @@ async function persist(ticks: MarketTick[]): Promise<void> {
     });
   }
 
-  // The newest day per crop is the one screens quote: always rewrite it.
-  const newestPerCrop = new Map<string, MarketTick>();
-  for (const tick of ticks) newestPerCrop.set(tick.crop, tick);
-  for (const tick of newestPerCrop.values()) {
-    await db.priceTick.upsert({
+  // Rare: a new day rolled over, or salts changed. One row at a time is fine.
+  for (const tick of changed) {
+    await db.priceTick.update({
       where: { crop_date: { crop: tick.crop, date: asDate(tick) } },
-      update: {
-        priceKobo: tick.priceKobo,
-        unit: tick.unit,
-        source: tick.source,
-      },
-      create: {
-        crop: tick.crop,
-        date: asDate(tick),
-        priceKobo: tick.priceKobo,
-        unit: tick.unit,
-        source: tick.source,
-      },
+      data: { priceKobo: tick.priceKobo, unit: tick.unit, source: tick.source },
     });
   }
 }

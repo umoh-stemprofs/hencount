@@ -27,6 +27,16 @@ export interface WeatherData {
 }
 
 export type WeatherLoadResult =
-  | { status: "ok"; data: WeatherData; badge: "LIVE" }
+  | {
+      status: "ok";
+      data: WeatherData;
+      badge: "LIVE";
+      /**
+       * Age of the reading in minutes. Set when it came from the 30-minute
+       * snapshot cache; undefined means it was fetched just now (the badge
+       * then reads "Live · updated just now", design.md §2).
+       */
+      ageMinutes?: number;
+    }
   | { status: "saved"; data: WeatherData; badge: "CACHED"; ageMinutes: number }
   | { status: "error"; message: string };

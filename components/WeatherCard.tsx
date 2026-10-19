@@ -5,18 +5,26 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { heatAlert } from "@/lib/alerts";
 import { formatAge, formatDayShort } from "@/lib/dates";
-import { loadWeather, type FarmLocation } from "@/lib/weather/load";
+import {
+  loadWeather,
+  type FarmLocation,
+} from "@/lib/weather/load";
+import type { WeatherLoadResult } from "@/lib/weather/types";
 
 const card = "rounded-card border border-border bg-surface p-6 shadow-card";
 
 export async function WeatherCard({
   farm,
   farmName,
+  // Speed (step 6): the dashboard already loaded the weather in its
+  // parallel wave — pass it in so the card does not repeat the fetch.
+  preloaded,
 }: {
   farm: FarmLocation;
   farmName: string;
+  preloaded?: WeatherLoadResult;
 }) {
-  const weather = await loadWeather(farm);
+  const weather = preloaded ?? (await loadWeather(farm));
   const alert =
     weather.status !== "error" ? heatAlert(weather.data.daily) : null;
 
@@ -27,7 +35,14 @@ export async function WeatherCard({
           Weather · {farmName}
         </h2>
         {weather.status === "ok" && (
-          <DataSourceBadge kind="live" detail="updated just now" />
+          <DataSourceBadge
+            kind="live"
+            detail={
+              weather.ageMinutes === undefined
+                ? "updated just now"
+                : `updated ${formatAge(weather.ageMinutes)}`
+            }
+          />
         )}
         {weather.status === "saved" && (
           <DataSourceBadge kind="saved" detail={formatAge(weather.ageMinutes)} />

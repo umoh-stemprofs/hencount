@@ -5,7 +5,7 @@
 // larger than the stock is refused on the server with one sentence.
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { sellEggsAction, type SaleState } from "@/app/actions/eggs";
 import { EGGS } from "@/lib/config";
@@ -36,6 +36,11 @@ export function SellEggsForm({
   const [priceNaira, setPriceNaira] = useState(
     trayPriceKobo === null ? "" : String(Math.round(trayPriceKobo / 100)),
   );
+  // A refusal stays on screen until the user edits an input — otherwise an
+  // old "more than stock" message lingers after the number is corrected.
+  const [edited, setEdited] = useState(false);
+  useEffect(() => setEdited(false), [state]);
+  const visibleError = edited ? null : state.error;
 
   const eggsSold = Number(eggs) || 0;
   const price = Number(priceNaira) || 0;
@@ -91,7 +96,10 @@ export function SellEggsForm({
           min={1}
           step={1}
           value={eggs}
-          onChange={(event) => setEggs(event.target.value)}
+          onChange={(event) => {
+            setEdited(true);
+            setEggs(event.target.value);
+          }}
           placeholder="90"
           className={inputClass}
         />
@@ -115,7 +123,10 @@ export function SellEggsForm({
           min={1}
           step={1}
           value={priceNaira}
-          onChange={(event) => setPriceNaira(event.target.value)}
+          onChange={(event) => {
+            setEdited(true);
+            setPriceNaira(event.target.value);
+          }}
           className={inputClass}
         />
         <p className="mt-1 text-sm text-muted">
@@ -130,13 +141,13 @@ export function SellEggsForm({
         <strong className="tabular-nums">{formatNaira(totalKobo)}</strong>
       </p>
 
-      {state.error && (
+      {visibleError && (
         <p
           role="alert"
           className="mt-4 inline-flex items-start gap-2 rounded-input bg-danger-bg px-3 py-2 text-sm font-medium text-danger"
         >
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          {state.error}
+          {visibleError}
         </p>
       )}
 

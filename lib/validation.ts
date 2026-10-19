@@ -54,16 +54,16 @@ export const dayLogSchema = z.object({
     .number({ invalid_type_error: "Hens must be a number." })
     .int("Hens must be a whole number of at least 1.")
     .min(1, "Hens must be a whole number of at least 1.")
-    .max(100_000, "Hens looks too big. Check it."),
+    .max(100_000, "That number of hens looks too big. Check it."),
   eggs: z.coerce
     .number({ invalid_type_error: "Eggs must be a number." })
     .int("Eggs must be a whole number of 0 or more.")
     .min(0, "Eggs must be a whole number of 0 or more.")
-    .max(100_000, "Eggs looks too big. Check it."),
+    .max(100_000, "That number of eggs looks too big. Check it."),
   feedKg: z.coerce
     .number({ invalid_type_error: "Feed must be a number of kg." })
     .positive("Feed must be more than 0 kg.")
-    .max(10_000, "Feed looks too big. Check it."),
+    .max(10_000, "That amount of feed looks too big. Check it."),
 });
 
 export const eggSaleSchema = z.object({

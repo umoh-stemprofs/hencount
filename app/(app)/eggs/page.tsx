@@ -17,12 +17,15 @@ import { requireUser } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export default async function EggsPage() {
+  // Speed (step 6): the farm and the tray price are independent, so they
+  // are fetched together; the flocks need the farm id and come next.
   const user = await requireUser();
-  const farm = await getFarmForUser(user.userId);
+  const [farm, eggPrice] = await Promise.all([
+    getFarmForUser(user.userId),
+    loadEggPrice(),
+  ]);
   const today = todayInAppTz();
-
   const flocks = farm ? await getFlocksForFarm(farm.id, user.userId) : [];
-  const eggPrice = await loadEggPrice();
   const trayPriceKobo = eggPrice.priceKobo;
 
   return (

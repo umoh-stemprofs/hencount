@@ -1,12 +1,14 @@
 // Market (docs/03-hencount.md page 7): the egg tray price with its
-// data-source badge, the change since yesterday, a 7-day table, and the
-// 7/30/90-day line chart (step 5, design.md S-MARKET).
-import { Crop } from "@prisma/client";
+// data-source badge, the change since yesterday, a 7-day table, the
+// 7/30/90-day line chart (step 5), and price cards for three more crops
+// from the same feed (step 6 rules checklist: "prices for at least 3 crops").
+import { Crop, Unit } from "@prisma/client";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { EggPriceCard } from "@/components/EggPriceCard";
 import { PriceChartCard } from "@/components/charts/PriceChartCard";
 import { formatDayShort, formatNaira } from "@/lib/dates";
+import { getCrop } from "@/lib/market/catalog";
 import { getMarketProvider } from "@/lib/market/provider";
 import type { MarketTick } from "@/lib/market/generator";
 import { requireUser } from "@/lib/session";
@@ -15,16 +17,42 @@ export const dynamic = "force-dynamic";
 
 const card = "rounded-card border border-border bg-surface p-6 shadow-card";
 
+/** The rule needs prices for at least 3 crops; these ride the same feed. */
+const OTHER_CROPS = [Crop.MAIZE, Crop.TOMATO, Crop.CASSAVA];
+
+const UNIT_WORD: Record<Unit, string> = {
+  [Unit.KG]: "per kg",
+  [Unit.TRAY]: "per tray",
+  [Unit.LITRE]: "per litre",
+};
+
 export default async function MarketPage() {
   await requireUser();
 
-  let history: MarketTick[] | null = null;
-  try {
-    // One provider read powers the price card, the table and the chart.
-    history = await getMarketProvider().getHistory(Crop.EGGS_TRAY, 90);
-  } catch (error) {
-    console.warn("Market history unavailable:", error);
-  }
+  // Speed (step 6): the 90-day egg history and the three extra crops run
+  // together; each returns two ticks (today + yesterday) for the change %.
+  const provider = getMarketProvider();
+  const [history, ...otherTicks] = await Promise.all([
+    provider.getHistory(Crop.EGGS_TRAY, 90).catch((error) => {
+      console.warn("Market history unavailable:", error);
+      return null;
+    }),
+    ...OTHER_CROPS.map((crop) =>
+      provider.getHistory(crop, 2).catch(() => null),
+    ),
+  ]);
+
+  const otherCrops = OTHER_CROPS.map((crop, index) => {
+    const ticks = otherTicks[index] ?? [];
+    const meta = getCrop(crop)!;
+    const latest = ticks.length > 0 ? ticks[ticks.length - 1] : null;
+    const previous = ticks.length > 1 ? ticks[0] : null;
+    const changePct =
+      latest && previous && previous.priceKobo > 0
+        ? ((latest.priceKobo - previous.priceKobo) / previous.priceKobo) * 100
+        : null;
+    return { crop, meta, latest, changePct };
+  });
 
   const series = (history ?? []).map((tick) => ({
     date: tick.date,
@@ -141,6 +169,54 @@ export default async function MarketPage() {
           </p>
         </section>
       </div>
+
+      {/* The Agriculture rules need prices for at least 3 crops — these
+          three ride the same feed as the tray price. */}
+      <section className={card} aria-labelledby="other-crops">
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="other-crops" className="text-lg font-semibold text-text">
+            Other crops, same market feed
+          </h2>
+          <DataSourceBadge kind="simulated" />
+        </div>
+        <ul className="mt-4 grid gap-4 sm:grid-cols-3">
+          {otherCrops.map(({ crop, meta, latest, changePct }) => (
+            <li
+              key={crop}
+              className="rounded-input border border-border bg-surface p-4"
+            >
+              <p className="text-sm font-medium text-muted">{meta.label}</p>
+              <p className="mt-1 text-2xl font-bold tabular-nums text-text">
+                {latest ? formatNaira(latest.priceKobo) : "—"}
+              </p>
+              <p className="text-sm text-muted">{UNIT_WORD[meta.unit]}</p>
+              {changePct === null ? (
+                <p className="mt-2 text-sm text-muted">
+                  No change to show yet.
+                </p>
+              ) : (
+                <p
+                  className={`mt-2 inline-flex items-center gap-1 text-sm font-medium ${
+                    changePct >= 0 ? "text-success" : "text-danger"
+                  }`}
+                >
+                  {changePct >= 0 ? (
+                    <TrendingUp className="h-4 w-4" aria-hidden="true" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  {changePct >= 0 ? "Up" : "Down"}{" "}
+                  {Math.abs(changePct).toFixed(1)}% vs yesterday
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          Sample base prices. A poultry or produce expert must confirm them
+          before real use.
+        </p>
+      </section>
 
       <PriceChartCard
         id="market-price-chart"

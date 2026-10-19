@@ -20,13 +20,13 @@ export default async function SellEggsPage({
 }: {
   params: { flockId: string };
 }) {
+  // Speed (step 6): the flock and the tray price are independent.
   const user = await requireUser();
-  const flock = await getFlockForUser(params.flockId, user.userId).catch(
-    () => null,
-  );
+  const [flock, eggPrice] = await Promise.all([
+    getFlockForUser(params.flockId, user.userId).catch(() => null),
+    loadEggPrice(),
+  ]);
   if (!flock) notFound();
-
-  const eggPrice = await loadEggPrice();
   const stock = stockFor(flock.logs, flock.sales);
   const value =
     eggPrice.priceKobo === null

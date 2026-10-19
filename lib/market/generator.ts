@@ -44,15 +44,23 @@ function clampX(x: number): number {
   return Math.max(-X_CLAMP, Math.min(X_CLAMP, x));
 }
 
-/** Deviation x[k] for day k, recomputed from x[0] = 0. */
-export function deviationOnDay(meta: CropMeta, k: number): number {
+/** Deviations x[0..k] in one forward pass (used by scans and pick-salts). */
+export function deviationSeries(meta: CropMeta, k: number): number[] {
+  const xs = new Array<number>(k + 1);
+  xs[0] = 0;
   let x = 0;
   for (let i = 1; i <= k; i++) {
     const rand = mulberry32(hashString(`${meta.crop}${meta.salt}${i}`))();
     const e = (rand - 0.5) * 2 * NOISE_LIMIT;
     x = clampX(x - MEAN_REVERT * x + e);
+    xs[i] = x;
   }
-  return x;
+  return xs;
+}
+
+/** Deviation x[k] for day k, recomputed from x[0] = 0. */
+export function deviationOnDay(meta: CropMeta, k: number): number {
+  return deviationSeries(meta, k)[k];
 }
 
 /** Price in integer kobo for one crop on one day. */

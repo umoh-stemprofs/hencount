@@ -15,13 +15,13 @@ import { StatCard } from "@/components/StatCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { EggBarsCard } from "@/components/charts/EggBarsCard";
 import { ProfitCard } from "@/components/charts/ProfitCard";
-import { loadEggPrice } from "@/components/EggPriceCard";
 import { adviceFor, dayMoney, metricsFor } from "@/lib/eggs";
 import type { AdviceStatus } from "@/lib/eggs";
 import { eggsSeries, profitSeries } from "@/lib/charts";
+import type { MarketTick } from "@/lib/market/generator";
 import { getMarketProvider } from "@/lib/market/provider";
 import { dateKey, formatNaira, todayInAppTz } from "@/lib/dates";
-import { getFarmForUser, getFlockForUser } from "@/lib/data";
+import { getFlockForUser } from "@/lib/data";
 import { db } from "@/lib/db";
 import { logOnDate } from "@/lib/flocks";
 import { requireUser } from "@/lib/session";
@@ -70,10 +70,15 @@ export default async function AdvicePage({
   );
   if (!flock) notFound();
 
-  const farm = await getFarmForUser(user.userId);
-  const feedPrice = farm
-    ? await db.feedPrice.findUnique({ where: { farmId: farm.id } })
-    : null;
+  // Speed (step 6): the feed price and the tray-price history do not
+  // depend on each other, so they are fetched together. One history call
+  // feeds both the profit chart and today's profit card.
+  const [feedPrice, history] = await Promise.all([
+    db.feedPrice.findFirst({ where: { farm: { userId: user.userId } } }),
+    getMarketProvider()
+      .getHistory(Crop.EGGS_TRAY, 7)
+      .catch(() => [] as MarketTick[]),
+  ]);
 
   const logs = flock.logs.map((log) => ({
     date: dateKey(log.date),
@@ -85,18 +90,14 @@ export default async function AdvicePage({
 
   const today = todayInAppTz();
 
-  // Chart data (step 5): the 7-day series with gaps kept as gaps.
+  // Chart data (step 5): the 7-day series with gaps kept as gaps. With no
+  // prices the profit chart shows gaps too — never invented numbers.
   const eggPoints = eggsSeries(logs, today, 7);
-  let trayPriceByDate: Record<string, number> = {};
-  try {
-    const history = await getMarketProvider().getHistory(Crop.EGGS_TRAY, 7);
-    trayPriceByDate = Object.fromEntries(
-      history.map((tick) => [tick.date, tick.priceKobo]),
-    );
-  } catch {
-    // No prices → the profit chart shows gaps, never invented numbers.
-    trayPriceByDate = {};
-  }
+  const trayPriceByDate = Object.fromEntries(
+    history.map((tick) => [tick.date, tick.priceKobo]),
+  );
+  const trayPriceKobo =
+    history.length > 0 ? history[history.length - 1].priceKobo : null;
   const profitPoints = profitSeries({
     logs,
     today,
@@ -137,13 +138,12 @@ export default async function AdvicePage({
       })
     : null;
 
-  const eggPrice = await loadEggPrice();
   const profit =
-    todayLog && eggPrice.priceKobo !== null && feedPrice
+    todayLog && trayPriceKobo !== null && feedPrice
       ? dayMoney(
           { eggs: todayLog.eggs, feedKg: todayLog.feedKg },
           {
-            trayPriceKobo: eggPrice.priceKobo,
+            trayPriceKobo,
             feedPriceKobo: feedPrice.priceKobo,
           },
         )

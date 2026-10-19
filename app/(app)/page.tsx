@@ -26,64 +26,70 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   // The session's own user; every read below is scoped to their farm.
+  // Speed (step 6): independent calls run in parallel — wave 1 below,
+  // wave 2 once the farm id is known.
   const user = await requireUser();
-  const farm = await getFarmForUser(user.userId);
   const today = todayInAppTz();
   const todayKey = dateKey(today);
   const demoMode = process.env.DEMO_MODE === "true";
 
-  const eggPrice = await loadEggPrice();
+  // Wave 1: the farm and the tray price do not depend on each other.
+  const [farm, eggPrice] = await Promise.all([
+    getFarmForUser(user.userId),
+    loadEggPrice(),
+  ]);
   const trayPriceKobo = eggPrice.priceKobo;
 
-  let stats: DashboardStats | null = null;
-  let feedPriceKobo: number | null = null;
-  let flocks: Awaited<ReturnType<typeof getFlocksForFarm>> = [];
-  let eggPoints: { date: string; eggs: number | null }[] = [];
-  let stockSlices: StockSlice[] = [];
-  if (farm) {
-    flocks = await getFlocksForFarm(farm.id, user.userId);
-    const feedPrice = await db.feedPrice.findUnique({
-      where: { farmId: farm.id },
-    });
-    feedPriceKobo = feedPrice?.priceKobo ?? null;
-    stats = computeDashboard({
-      flocks: flocks.map((f) => ({
-        logs: f.logs.map((l) => ({
-          date: dateKey(l.date),
-          eggs: l.eggs,
-          feedKg: l.feedKg,
-        })),
-        sales: f.sales.map((s) => ({ eggs: s.eggs })),
-      })),
-      todayKey,
-      trayPriceKobo,
-      feedPriceKobo,
-    });
+  // Wave 2: flocks, feed price and weather together.
+  const [flocks, feedPrice, weather] = await Promise.all([
+    farm ? getFlocksForFarm(farm.id, user.userId) : Promise.resolve([]),
+    farm
+      ? db.feedPrice.findUnique({ where: { farmId: farm.id } })
+      : Promise.resolve(null),
+    loadWeather(farm ?? DEFAULT_FARM),
+  ]);
+  const feedPriceKobo = feedPrice?.priceKobo ?? null;
 
-    // Chart inputs: raw logs only — /lib/charts.ts keeps the gaps.
-    eggPoints = eggsSeriesAllFlocks(
-      flocks.map((flock) => ({
-        logs: flock.logs.map((log) => ({
-          date: dateKey(log.date),
-          hens: log.hens,
-          eggs: log.eggs,
-          feedKg: log.feedKg,
+  const stats: DashboardStats | null = farm
+    ? computeDashboard({
+        flocks: flocks.map((f) => ({
+          logs: f.logs.map((l) => ({
+            date: dateKey(l.date),
+            eggs: l.eggs,
+            feedKg: l.feedKg,
+          })),
+          sales: f.sales.map((s) => ({ eggs: s.eggs })),
         })),
-      })),
-      today,
-      7,
-    );
-    if (trayPriceKobo !== null) {
-      stockSlices = stockValueSlices(
-        flocks.map((flock) => ({
-          name: flock.name,
-          laidEggs: flock.logs.reduce((sum, log) => sum + log.eggs, 0),
-          soldEggs: flock.sales.reduce((sum, sale) => sum + sale.eggs, 0),
-        })),
+        todayKey,
         trayPriceKobo,
-      );
-    }
-  }
+        feedPriceKobo,
+      })
+    : null;
+
+  // Chart inputs: raw logs only — /lib/charts.ts keeps the gaps.
+  const eggPoints = eggsSeriesAllFlocks(
+    flocks.map((flock) => ({
+      logs: flock.logs.map((log) => ({
+        date: dateKey(log.date),
+        hens: log.hens,
+        eggs: log.eggs,
+        feedKg: log.feedKg,
+      })),
+    })),
+    today,
+    7,
+  );
+  const stockSlices: StockSlice[] =
+    trayPriceKobo === null
+      ? []
+      : stockValueSlices(
+          flocks.map((flock) => ({
+            name: flock.name,
+            laidEggs: flock.logs.reduce((sum, log) => sum + log.eggs, 0),
+            soldEggs: flock.sales.reduce((sum, sale) => sum + sale.eggs, 0),
+          })),
+          trayPriceKobo,
+        );
 
   const addTodayAction = {
     href: flocks[0] ? `/eggs/${flocks[0].id}/add` : "/eggs",
@@ -91,7 +97,6 @@ export default async function DashboardPage() {
   };
 
   const weatherFarm = farm ?? DEFAULT_FARM;
-  const weather = await loadWeather(weatherFarm);
   const heat = weather.status !== "error" ? heatAlert(weather.data.daily) : null;
 
   return (
@@ -206,7 +211,11 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <EggPriceCard data={eggPrice} />
         <div className="lg:col-span-2">
-          <WeatherCard farm={weatherFarm} farmName={weatherFarm.name} />
+          <WeatherCard
+            farm={weatherFarm}
+            farmName={weatherFarm.name}
+            preloaded={weather}
+          />
         </div>
       </div>
 

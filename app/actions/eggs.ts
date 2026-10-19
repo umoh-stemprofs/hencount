@@ -68,11 +68,18 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-/** Which field a refusal belongs under, for the inline sentence. */
+/**
+ * Which field a refusal belongs under, for the inline sentence. Matched on
+ * keywords rather than the sentence's opening word, so rewording a message
+ * (e.g. "That number of hens looks too big") cannot silently un-anchor it.
+ * "Eggs cannot be more than hens." names both fields — eggs wins because
+ * that is where the user must act.
+ */
 function fieldFor(message: string): DayLogField | null {
-  if (message.startsWith("Eggs")) return "eggs";
-  if (message.startsWith("Hens")) return "hens";
-  if (message.startsWith("Feed")) return "feedKg";
+  const text = message.toLowerCase();
+  if (text.includes("egg")) return "eggs";
+  if (text.includes("feed")) return "feedKg";
+  if (text.includes("hen")) return "hens";
   return null;
 }
 

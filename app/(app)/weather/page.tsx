@@ -69,7 +69,14 @@ export default async function WeatherPage() {
                 Now
               </h2>
               {weather.status === "ok" ? (
-                <DataSourceBadge kind="live" detail="updated just now" />
+                <DataSourceBadge
+                  kind="live"
+                  detail={
+                    weather.ageMinutes === undefined
+                      ? "updated just now"
+                      : `updated ${formatAge(weather.ageMinutes)}`
+                  }
+                />
               ) : (
                 <DataSourceBadge
                   kind="saved"

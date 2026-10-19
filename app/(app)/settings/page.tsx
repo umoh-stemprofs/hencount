@@ -11,11 +11,13 @@ import { requireUser } from "@/lib/session";
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
+  // Speed (step 6): farm and feed price are fetched together (the feed
+  // price is read through its farm's owner, not the farm row's id).
   const user = await requireUser();
-  const farm = await getFarmForUser(user.userId);
-  const feedPrice = farm
-    ? await db.feedPrice.findUnique({ where: { farmId: farm.id } })
-    : null;
+  const [farm, feedPrice] = await Promise.all([
+    getFarmForUser(user.userId),
+    db.feedPrice.findFirst({ where: { farm: { userId: user.userId } } }),
+  ]);
 
   return (
     <div className="max-w-xl">

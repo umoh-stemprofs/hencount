@@ -1,7 +1,10 @@
 // loadWeather: fetch with cache and fallback.
-//   1. Fresh provider answer → save a WeatherSnapshot, badge LIVE.
-//   2. Provider fails → serve the last snapshot, badge "Saved data · X h old".
-//   3. No snapshot at all → an error the page can show; the rest of the app
+//   1. A snapshot younger than WEATHER.cacheMinutes (30) is served as live
+//      data with its age — no external call (00-global.md §3 "cache for
+//      30 min"; the badge reads "Live · updated 12 min ago").
+//   2. Otherwise fetch fresh: save a WeatherSnapshot, badge LIVE.
+//   3. Provider fails → serve the last snapshot, badge "Saved data · X h old".
+//   4. No snapshot at all → an error the page can show; the rest of the app
 //      keeps working.
 import "server-only";
 import { WEATHER } from "../config";
@@ -33,6 +36,24 @@ export async function loadWeather(
   const store = deps.store ?? prismaSnapshotStore;
   const now = deps.now ?? (() => new Date());
 
+  const ageMinutesOf = (fetchedAt: string): number =>
+    (now().getTime() - new Date(fetchedAt).getTime()) / 60_000;
+
+  // 1. Cache: a recent snapshot is served without calling the provider.
+  try {
+    const cached = await store.latest(farm.id);
+    const fresh = cached ? parseSnapshotPayload(cached) : null;
+    if (fresh) {
+      const age = ageMinutesOf(fresh.fetchedAt);
+      if (age >= 0 && age < WEATHER.cacheMinutes) {
+        return { status: "ok", data: fresh, badge: "LIVE", ageMinutes: age };
+      }
+    }
+  } catch (error) {
+    // A cache read failure must not stop a fresh fetch.
+    console.warn("Could not read weather snapshot, fetching fresh:", error);
+  }
+
   try {
     const data = await provider.fetchCurrent(farm.lat, farm.lon);
     try {
@@ -52,10 +73,7 @@ export async function loadWeather(
     }
     const saved = snapshot ? parseSnapshotPayload(snapshot) : null;
     if (saved) {
-      const ageMinutes = Math.max(
-        0,
-        (now().getTime() - new Date(saved.fetchedAt).getTime()) / 60_000,
-      );
+      const ageMinutes = Math.max(0, ageMinutesOf(saved.fetchedAt));
       return { status: "saved", data: saved, badge: "CACHED", ageMinutes };
     }
     return {

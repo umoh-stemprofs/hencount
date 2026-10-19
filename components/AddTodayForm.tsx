@@ -113,6 +113,57 @@ export function AddTodayForm({
   const [hens, setHens] = useState(initial ? String(initial.hens) : "100");
   const [eggs, setEggs] = useState(initial ? String(initial.eggs) : "");
   const [feedKg, setFeedKg] = useState(initial ? String(initial.feedKg) : "");
+  // A server refusal disappears as soon as the user edits an input, so an old
+  // message never lingers next to a corrected number.
+  const [edited, setEdited] = useState(false);
+  useEffect(() => setEdited(false), [state]);
+  const serverError = edited ? null : state.error;
+  // The same two rules as the server, checked when Next is pressed so the
+  // user is stopped on step 1 instead of after filling in the feed too.
+  const [stepOneError, setStepOneError] = useState<{
+    message: string;
+    field: "hens" | "eggs";
+  } | null>(null);
+
+  const editHens = (next: string) => {
+    setEdited(true);
+    setStepOneError(null);
+    setHens(next);
+  };
+  const editEggs = (next: string) => {
+    setEdited(true);
+    setStepOneError(null);
+    setEggs(next);
+  };
+  const editFeed = (next: string) => {
+    setEdited(true);
+    setFeedKg(next);
+  };
+
+  const checkStepOne = (): boolean => {
+    const h = Number(hens);
+    const e = Number(eggs);
+    if (!Number.isInteger(h) || h < 1) {
+      setStepOneError({
+        message: "Hens must be a whole number of at least 1.",
+        field: "hens",
+      });
+      return false;
+    }
+    if (!Number.isInteger(e) || e < 0) {
+      setStepOneError({
+        message: "Eggs must be a whole number of 0 or more.",
+        field: "eggs",
+      });
+      return false;
+    }
+    if (e > h) {
+      setStepOneError({ message: "Eggs cannot be more than hens.", field: "eggs" });
+      return false;
+    }
+    setStepOneError(null);
+    return true;
+  };
 
   // A server refusal belongs on the step that holds that field.
   useEffect(() => {
@@ -170,7 +221,7 @@ export function AddTodayForm({
           id="hens"
           label="Hens today"
           value={hens}
-          onChange={setHens}
+          onChange={editHens}
           unit="hens"
           helper="How many hens were in this flock today."
           step={1}
@@ -179,13 +230,14 @@ export function AddTodayForm({
           id="eggs"
           label="Eggs collected"
           value={eggs}
-          onChange={setEggs}
+          onChange={editEggs}
           unit="eggs"
           helper="A hen can lay at most one egg a day."
           step={1}
         />
-        {state.error && state.field === "eggs" && <ErrorLine>{state.error}</ErrorLine>}
-        {state.error && state.field === "hens" && <ErrorLine>{state.error}</ErrorLine>}
+        {serverError && state.field === "eggs" && <ErrorLine>{serverError}</ErrorLine>}
+        {serverError && state.field === "hens" && <ErrorLine>{serverError}</ErrorLine>}
+        {stepOneError && <ErrorLine>{stepOneError.message}</ErrorLine>}
       </div>
 
       <div hidden={step !== 2} className="mt-6 space-y-5">
@@ -193,24 +245,26 @@ export function AddTodayForm({
           id="feedKg"
           label="Feed used today"
           value={feedKg}
-          onChange={setFeedKg}
+          onChange={editFeed}
           unit="kg"
           helper="Feed given to this flock today, in kilograms."
           step={0.1}
         />
-        {state.error && state.field === "feedKg" && <ErrorLine>{state.error}</ErrorLine>}
+        {serverError && state.field === "feedKg" && <ErrorLine>{serverError}</ErrorLine>}
         <p className="text-sm leading-6 text-muted">
           These numbers stay on this page, so nothing is lost if you go back.
         </p>
       </div>
 
-      {state.error && state.field === null && <ErrorLine>{state.error}</ErrorLine>}
+      {serverError && state.field === null && <ErrorLine>{serverError}</ErrorLine>}
 
       <div className="mt-6 flex flex-wrap gap-3">
         {step === 1 ? (
           <button
             type="button"
-            onClick={() => setStep(2)}
+            onClick={() => {
+              if (checkStepOne()) setStep(2);
+            }}
             className="inline-flex h-12 items-center gap-2 rounded-input bg-accent px-5 text-base font-semibold text-white"
           >
             Next

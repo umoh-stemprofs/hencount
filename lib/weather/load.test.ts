@@ -57,8 +57,49 @@ describe("loadWeather", () => {
     expect(result.status).toBe("ok");
     if (result.status === "error") throw new Error("unreachable");
     expect(result.badge).toBe("LIVE");
+    // No age: it was fetched just now, not read from the cache.
+    expect(result.ageMinutes).toBeUndefined();
     expect(store.save).toHaveBeenCalledTimes(1);
-    expect(store.latest).not.toHaveBeenCalled();
+    // The cache was checked first (and was empty), then the fetch happened.
+    expect(store.latest).toHaveBeenCalledTimes(1);
+    expect(okProvider.fetchCurrent).toHaveBeenCalledTimes(1);
+  });
+
+  it("serves a snapshot younger than 30 minutes without calling the provider", async () => {
+    // Fetched 15 minutes before `now` — inside the cache window.
+    const store = fakeStore({
+      ...SAVED_SNAPSHOT,
+      fetchedAt: new Date("2026-10-18T11:45:00.000Z"),
+    });
+    const provider: WeatherProvider = {
+      source: "OPEN_METEO",
+      fetchCurrent: vi.fn(async () => SAMPLE),
+    };
+    const result = await loadWeather(FARM, { provider, store, now: NOW });
+
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("unreachable");
+    expect(result.badge).toBe("LIVE");
+    expect(Math.round(result.ageMinutes ?? -1)).toBe(15);
+    // Cache hit: no external call, no new snapshot row.
+    expect(provider.fetchCurrent).not.toHaveBeenCalled();
+    expect(store.save).not.toHaveBeenCalled();
+  });
+
+  it("refetches when the snapshot is older than 30 minutes", async () => {
+    // SAVED_SNAPSHOT is 3 hours old — outside the cache window.
+    const store = fakeStore(SAVED_SNAPSHOT);
+    const provider: WeatherProvider = {
+      source: "OPEN_METEO",
+      fetchCurrent: vi.fn(async () => SAMPLE),
+    };
+    const result = await loadWeather(FARM, { provider, store, now: NOW });
+
+    expect(result.status).toBe("ok");
+    if (result.status !== "ok") throw new Error("unreachable");
+    expect(result.ageMinutes).toBeUndefined();
+    expect(provider.fetchCurrent).toHaveBeenCalledTimes(1);
+    expect(store.save).toHaveBeenCalledTimes(1);
   });
 
   it("falls back to the saved snapshot with the Saved data badge when fetch fails", async () => {
