@@ -3,15 +3,11 @@
 // the rest of the dashboard down (00-global.md §3).
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { btnQuiet, card, StatLabel, StatNote, StatValue } from "@/components/ui";
 import { heatAlert } from "@/lib/alerts";
 import { formatAge, formatDayShort } from "@/lib/dates";
-import {
-  loadWeather,
-  type FarmLocation,
-} from "@/lib/weather/load";
+import { loadWeather, type FarmLocation } from "@/lib/weather/load";
 import type { WeatherLoadResult } from "@/lib/weather/types";
-
-const card = "rounded-card border border-border bg-surface p-6 shadow-card";
 
 export async function WeatherCard({
   farm,
@@ -30,52 +26,56 @@ export async function WeatherCard({
 
   return (
     <section className={card} aria-labelledby="weather-title">
-      <div className="flex items-start justify-between gap-3">
-        <h2 id="weather-title" className="text-sm font-medium text-muted">
-          Weather · {farmName}
-        </h2>
-        {weather.status === "ok" && (
-          <DataSourceBadge
-            kind="live"
-            detail={
-              weather.ageMinutes === undefined
-                ? "updated just now"
-                : `updated ${formatAge(weather.ageMinutes)}`
-            }
-          />
-        )}
-        {weather.status === "saved" && (
-          <DataSourceBadge kind="saved" detail={formatAge(weather.ageMinutes)} />
-        )}
-      </div>
+      <StatLabel
+        trailing={
+          weather.status === "ok" ? (
+            <DataSourceBadge
+              kind="live"
+              detail={
+                weather.ageMinutes === undefined
+                  ? "updated just now"
+                  : `updated ${formatAge(weather.ageMinutes)}`
+              }
+            />
+          ) : weather.status === "saved" ? (
+            <DataSourceBadge kind="saved" detail={formatAge(weather.ageMinutes)} />
+          ) : undefined
+        }
+      >
+        <span id="weather-title">Weather · {farmName}</span>
+      </StatLabel>
 
       {weather.status === "error" ? (
         <>
-          <p className="mt-3 text-base leading-6 text-danger">{weather.message}</p>
+          <p className="mt-3 text-body-lg leading-7 text-danger">
+            {weather.message}
+          </p>
           <a
             href="/weather"
-            className="mt-4 inline-flex h-12 items-center gap-2 rounded-input border border-border bg-surface px-4 text-sm font-semibold text-text hover:bg-bg"
+            className={`${btnQuiet} mt-4`}
           >
-            <RefreshCw className="h-4 w-4" aria-hidden="true" />
+            <RefreshCw className="h-5 w-5" aria-hidden="true" />
             Try again
           </a>
         </>
       ) : (
         <>
-          <div className="mt-2 flex items-baseline gap-3">
-            <p className="text-4xl font-bold tabular-nums text-text">
+          <div className="mt-1 flex flex-wrap items-baseline gap-3">
+            <StatValue>
               {Math.round(weather.data.current.tempC)}°C
+            </StatValue>
+            <p className="text-body-lg text-muted">
+              {weather.data.current.text}
             </p>
-            <p className="text-base text-muted">{weather.data.current.text}</p>
           </div>
-          <p className="mt-1 text-sm text-muted">
+          <StatNote>
             Humidity {Math.round(weather.data.current.humidity)}% · Wind{" "}
             {Math.round(weather.data.current.windKmh)} km/h
-          </p>
+          </StatNote>
 
           {alert && (
-            <p className="mt-4 inline-flex items-start gap-2 rounded-input bg-warning-bg px-3 py-2 text-sm font-medium text-warning">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+            <p className="mt-4 inline-flex items-start gap-2 rounded-card bg-warning-bg px-3 py-2 text-body-base font-medium text-warning">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
               <span>
                 {alert.message} ({alert.date})
               </span>
@@ -88,20 +88,20 @@ export async function WeatherCard({
                 key={day.date}
                 className="rounded-input border border-border px-3 py-2"
               >
-                <p className="text-sm font-medium text-text">
+                <p className="text-body-base font-semibold text-text">
                   {formatDayShort(new Date(`${day.date}T12:00:00Z`))}
                 </p>
-                <p className="text-sm tabular-nums text-muted">
+                <p className="text-body-base tabular-nums text-muted">
                   {Math.round(day.minC)}° / {Math.round(day.maxC)}°
                 </p>
-                <p className="text-sm tabular-nums text-muted">
+                <p className="text-body-base tabular-nums text-muted">
                   {day.rainMm} mm · {day.rainChancePct}%
                 </p>
               </li>
             ))}
           </ul>
           {weather.status === "saved" && (
-            <p className="mt-3 text-sm text-muted">
+            <p className="mt-3 text-body-base leading-6 text-muted">
               The weather service did not answer, so this is saved data.
             </p>
           )}

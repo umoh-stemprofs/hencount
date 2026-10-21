@@ -1,7 +1,10 @@
-// The authenticated app shell (design.md §3, Agriculture web dashboard):
-// desktop 240 px left sidebar + content grid, phone top bar + bottom nav
-// with 4 items. The footer line is on every page.
-import { LogOut, Settings } from "lucide-react";
+// The authenticated app shell (docs/design.md §3, Agriculture web dashboard).
+// Matches stitch_.../hencount_home_desktop: a fixed 288px sidebar with an
+// ochre egg tile, a solid ochre active pill, a "Barn Online" status row and
+// the decision-support line; a blurred top bar; content capped at 1200px
+// (DESIGN.md "Layout & Spacing"). Phone: sticky top bar + fixed 4-item bottom
+// nav with 16px labels.
+import { Egg, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { logoutAction } from "@/app/actions/auth";
 import { NavLinks } from "@/components/NavLinks";
@@ -16,58 +19,96 @@ export default async function AppLayout({
 
   return (
     <div className="min-h-screen bg-bg">
-      {/* Desktop: left sidebar, 240 px */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-border bg-surface lg:flex">
-        <div className="px-6 py-6">
-          <p className="text-lg font-semibold text-accent">HenCount</p>
-          <p className="mt-1 text-sm text-muted">Eggs, feed and profit</p>
+      {/* Desktop: fixed left sidebar, 288px */}
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-72 flex-col justify-between border-r border-border bg-surface shadow-bar lg:flex">
+        <div className="flex flex-col">
+          <div className="flex h-20 items-center gap-space-sm px-space-lg">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent">
+              <Egg className="h-6 w-6 text-white" aria-hidden="true" />
+            </span>
+            <span className="text-headline-md tracking-tight text-text">
+              HenCount
+            </span>
+          </div>
+          <nav className="px-space-md py-space-sm" aria-label="Main">
+            <NavLinks variant="sidebar" />
+          </nav>
         </div>
-        <nav className="flex-1 px-3" aria-label="Main">
-          <NavLinks variant="sidebar" />
-        </nav>
-        <div className="border-t border-border px-6 py-4">
-          <p className="truncate text-sm font-medium text-text">{user.name}</p>
-          <p className="truncate text-sm text-muted">{user.email}</p>
-          <form action={logoutAction} className="mt-3">
-            <button
-              type="submit"
-              className="inline-flex h-12 items-center gap-2 rounded-input border border-border bg-surface px-3 text-sm font-semibold text-text hover:bg-bg"
-            >
-              <LogOut className="h-4 w-4" aria-hidden="true" />
-              Log out
-            </button>
-          </form>
+
+        <div className="flex flex-col gap-space-sm border-t border-border p-space-md">
+          <div className="flex items-center gap-space-sm rounded-xl bg-[#F1F3FF] px-space-md py-space-sm">
+            <span
+              className="h-3 w-3 shrink-0 rounded-full bg-success"
+              aria-hidden="true"
+            />
+            <span className="text-label-base text-text">Barn Online</span>
+          </div>
+
+          <div className="px-space-xs">
+            <p className="truncate text-body-base font-semibold text-text">
+              {user.name}
+            </p>
+            <p className="truncate text-body-base text-muted">{user.email}</p>
+            <form action={logoutAction} className="mt-space-sm">
+              <button
+                type="submit"
+                className="inline-flex h-[52px] w-full items-center justify-center gap-space-sm rounded-card border border-border bg-surface px-space-md text-body-base font-semibold text-text transition-colors hover:bg-bg"
+              >
+                <LogOut className="h-5 w-5" aria-hidden="true" />
+                Log out
+              </button>
+            </form>
+          </div>
         </div>
       </aside>
 
-      {/* Phone: top bar */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-surface px-4 py-2 lg:hidden">
-        <p className="text-lg font-semibold text-accent">HenCount</p>
-        <div className="flex items-center gap-1">
-          <Link
-            href="/settings"
-            aria-label="Settings"
-            className="inline-flex h-12 w-12 items-center justify-center rounded-input text-muted"
-          >
-            <Settings className="h-5 w-5" aria-hidden="true" />
-          </Link>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              aria-label="Log out"
-              className="inline-flex h-12 w-12 items-center justify-center rounded-input text-muted"
+      <div className="lg:pl-72">
+        {/* Phone: sticky top bar */}
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-surface/90 px-space-md backdrop-blur-xl lg:fixed lg:right-0 lg:left-72 lg:h-20 lg:px-gutter-desktop shadow-bar">
+          <div className="flex items-center gap-space-sm lg:hidden">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+              <Egg className="h-5 w-5 text-white" aria-hidden="true" />
+            </span>
+            <span className="text-headline-sm tracking-tight text-text">
+              HenCount
+            </span>
+          </div>
+          <div className="hidden lg:block" aria-hidden="true" />
+          <div className="flex items-center gap-space-sm">
+            <Link
+              href="/settings"
+              aria-label="Settings"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-card text-muted transition-colors hover:bg-bg hover:text-text lg:hidden"
             >
-              <LogOut className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </form>
-        </div>
-      </header>
+              <Settings className="h-5 w-5" aria-hidden="true" />
+            </Link>
+            <form action={logoutAction} className="lg:hidden">
+              <button
+                type="submit"
+                aria-label="Log out"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-card text-muted transition-colors hover:bg-bg hover:text-text"
+              >
+                <LogOut className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </form>
+            <span className="hidden h-8 w-8 items-center justify-center rounded-full bg-accent lg:flex">
+              <span className="sr-only">Signed in as {user.name}</span>
+              <span className="text-label-base text-white" aria-hidden="true">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+            </span>
+          </div>
+        </header>
 
-      <main className="lg:pl-60">
-        <div className="mx-auto max-w-[1280px] px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:py-8 lg:pb-10">
+        {/* pt matches the fixed 20-bar (h-20) so the greeting never tucks
+            under it; the 40px below the bar is the mockup's space-xl. */}
+        <main className="w-full max-w-[1200px] px-space-md pb-28 pt-space-lg sm:px-6 lg:px-8 lg:pt-[6.5rem] lg:pb-space-xl">
           {children}
-          <footer className="mt-10 max-w-[70ch] border-t border-border pt-4 text-sm leading-6 text-muted">
-            <p className="font-medium text-text">
+
+          {/* Footer (00-global.md §6) — the mockups show only the first
+              sentence; the second is a required disclaimer too, so both stay. */}
+          <footer className="mt-space-xl max-w-[70ch] border-t border-border pt-space-md text-body-base leading-6 text-muted">
+            <p className="font-semibold text-text">
               Decision-support tool. You decide.
             </p>
             <p className="mt-1">
@@ -76,13 +117,13 @@ export default async function AppLayout({
               review them before real use.
             </p>
           </footer>
-        </div>
-      </main>
+        </main>
+      </div>
 
-      {/* Phone: bottom nav, 4 items */}
+      {/* Phone: bottom nav, 4 items, 16px labels */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface shadow-bar lg:hidden"
       >
         <NavLinks variant="bottom" />
       </nav>

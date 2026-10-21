@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { saveDayLogAction, type DayLogState } from "@/app/actions/eggs";
+import { btnPrimary, btnSecondary } from "./ui";
 import { StepBar } from "./StepBar";
 
 const INITIAL: DayLogState = {
@@ -20,8 +21,13 @@ const INITIAL: DayLogState = {
   message: null,
 };
 
+// DESIGN.md "Input Fields & Steppers": the value reads at display-stat
+// (40px) and the flanking tap targets are a full 56x56 so they work with
+// gloves or damp hands. Typing still works — the number box is a real input.
+const stepperBtn =
+  "inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-card border-2 border-border-strong bg-surface text-text transition-colors hover:bg-bg active:brightness-95";
 const inputClass =
-  "h-12 w-24 rounded-input border border-border bg-surface text-center text-base tabular-nums text-text";
+  "h-16 min-w-0 flex-1 rounded-card border-2 border-border-strong bg-surface px-2 text-center text-display-stat tabular-nums text-text focus:border-accent";
 
 function Stepper({
   id,
@@ -49,17 +55,17 @@ function Stepper({
 
   return (
     <div>
-      <label htmlFor={`log-${id}`} className="block text-sm font-medium text-text">
+      <label htmlFor={`log-${id}`} className="block text-label-lg text-text">
         {label}
       </label>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="mt-2 flex items-center gap-space-sm">
         <button
           type="button"
-          aria-label={`Less ${label.toLowerCase()}`}
+          aria-label={`Decrease ${label.toLowerCase()} by ${id === "feedKg" ? "half a kilogram" : "1"}`}
           onClick={() => bump(id === "feedKg" ? -0.5 : -1)}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-input border border-border bg-surface text-text hover:bg-bg"
+          className={stepperBtn}
         >
-          <Minus className="h-5 w-5" aria-hidden="true" />
+          <Minus className="h-6 w-6" aria-hidden="true" />
         </button>
         <input
           id={`log-${id}`}
@@ -74,15 +80,15 @@ function Stepper({
         />
         <button
           type="button"
-          aria-label={`More ${label.toLowerCase()}`}
+          aria-label={`Increase ${label.toLowerCase()} by ${id === "feedKg" ? "half a kilogram" : "1"}`}
           onClick={() => bump(id === "feedKg" ? 0.5 : 1)}
-          className="inline-flex h-12 w-12 items-center justify-center rounded-input border border-border bg-surface text-text hover:bg-bg"
+          className={stepperBtn}
         >
-          <Plus className="h-5 w-5" aria-hidden="true" />
+          <Plus className="h-6 w-6" aria-hidden="true" />
         </button>
-        <span className="text-sm text-muted">{unit}</span>
+        <span className="text-body-lg-bold text-muted">{unit}</span>
       </div>
-      <p className="mt-1 text-sm text-muted">{helper}</p>
+      <p className="mt-1 text-body-base leading-6 text-muted">{helper}</p>
     </div>
   );
 }
@@ -90,10 +96,9 @@ function Stepper({
 function ErrorLine({ children }: { children: React.ReactNode }) {
   return (
     <p
-      role="alert"
-      className="mt-2 inline-flex items-start gap-2 rounded-input bg-danger-bg px-3 py-2 text-sm font-medium text-danger"
-    >
-      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+      role="alert"      className="mt-2 inline-flex items-start gap-2 rounded-input border-2 border-[#FECDCA] bg-danger-bg p-space-md text-body-base font-semibold text-danger"
+      >
+        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
       {children}
     </p>
   );
@@ -173,30 +178,24 @@ export function AddTodayForm({
 
   if (state.saved) {
     return (
-      <div className="mt-6 rounded-card border border-border bg-surface p-6 shadow-card">
+      <div className="mt-6 rounded-card border border-border bg-surface p-space-lg shadow-card">
         <p
           role="status"
-          className="inline-flex items-center gap-2 text-lg font-semibold text-success"
+          className="inline-flex items-center gap-2 text-headline-lg text-success"
         >
-          <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+          <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           {state.message}
         </p>
-        <p className="mt-2 text-base leading-6 text-muted">
+        <p className="mt-2 text-body-lg leading-7 text-muted">
           {state.updated
             ? "The numbers for today were replaced with what you just entered."
             : `Today's numbers for ${flockName} are saved.`}
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href={`/eggs/${flockId}/advice`}
-            className="inline-flex h-12 items-center rounded-input bg-accent px-4 text-base font-semibold text-white"
-          >
+        <div className="mt-space-lg flex flex-wrap gap-space-sm">
+          <Link href={`/eggs/${flockId}/advice`} className={btnPrimary}>
             See advice
           </Link>
-          <Link
-            href="/eggs"
-            className="inline-flex h-12 items-center rounded-input border border-border bg-surface px-4 text-base font-semibold text-text hover:bg-bg"
-          >
+          <Link href="/eggs" className={btnSecondary}>
             Back to flocks
           </Link>
         </div>
@@ -207,7 +206,7 @@ export function AddTodayForm({
   return (
     <form
       action={formAction}
-      className="mt-6 max-w-[560px] rounded-card border border-border bg-surface p-6 shadow-card"
+      className="mt-6 max-w-[560px] rounded-card border border-border bg-surface p-space-lg shadow-card"
     >
       <input type="hidden" name="flockId" value={flockId} />
       <StepBar
@@ -251,39 +250,32 @@ export function AddTodayForm({
           step={0.1}
         />
         {serverError && state.field === "feedKg" && <ErrorLine>{serverError}</ErrorLine>}
-        <p className="text-sm leading-6 text-muted">
+        <p className="text-body-base leading-6 text-muted">
           These numbers stay on this page, so nothing is lost if you go back.
         </p>
       </div>
 
       {serverError && state.field === null && <ErrorLine>{serverError}</ErrorLine>}
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-space-lg flex flex-wrap gap-space-sm">
         {step === 1 ? (
           <button
             type="button"
             onClick={() => {
               if (checkStepOne()) setStep(2);
             }}
-            className="inline-flex h-12 items-center gap-2 rounded-input bg-accent px-5 text-base font-semibold text-white"
+            className={btnPrimary}
           >
             Next
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            <ArrowRight className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="inline-flex h-12 items-center gap-2 rounded-input border border-border bg-surface px-4 text-base font-semibold text-text hover:bg-bg"
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <button type="button" onClick={() => setStep(1)} className={btnSecondary}>
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
               Back
             </button>
-            <button
-              type="submit"
-              className="inline-flex h-12 items-center rounded-input bg-accent px-5 text-base font-semibold text-white"
-            >
+            <button type="submit" className={btnPrimary}>
               Save today&apos;s log
             </button>
           </>

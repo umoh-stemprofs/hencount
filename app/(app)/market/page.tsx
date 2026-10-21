@@ -1,12 +1,17 @@
-// Market (docs/03-hencount.md page 7): the egg tray price with its
-// data-source badge, the change since yesterday, a 7-day table, the
-// 7/30/90-day line chart (step 5), and price cards for three more crops
-// from the same feed (step 6 rules checklist: "prices for at least 3 crops").
+// Market / "Prices" (docs/03-hencount.md page 7), built to the mockup
+// structure in stitch_.../hencount_prices_today_desktop: the data-source badge
+// sits inline beside the heading, three crop price cards sit in a row, and
+// the chart and its table live in their own accordions.
+//
+// The Agriculture rule needs prices for at least 3 crops — the tray price
+// plus the three crops below ride the same feed. Nothing here invents a
+// number: a missing price shows "—", and the feed's source is always badged.
 import { Crop, Unit } from "@prisma/client";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { Egg, Leaf, Sprout, TrendingDown, TrendingUp, Wheat } from "lucide-react";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
 import { EggPriceCard } from "@/components/EggPriceCard";
 import { PriceChartCard } from "@/components/charts/PriceChartCard";
+import { card, StatLabel, StatNote, StatValue } from "@/components/ui";
 import { formatDayShort, formatNaira } from "@/lib/dates";
 import { getCrop } from "@/lib/market/catalog";
 import { getMarketProvider } from "@/lib/market/provider";
@@ -15,8 +20,6 @@ import { requireUser } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-const card = "rounded-card border border-border bg-surface p-6 shadow-card";
-
 /** The rule needs prices for at least 3 crops; these ride the same feed. */
 const OTHER_CROPS = [Crop.MAIZE, Crop.TOMATO, Crop.CASSAVA];
 
@@ -24,6 +27,13 @@ const UNIT_WORD: Record<Unit, string> = {
   [Unit.KG]: "per kg",
   [Unit.TRAY]: "per tray",
   [Unit.LITRE]: "per litre",
+};
+
+const CROP_ICON: Record<string, React.ReactNode> = {
+  [Crop.MAIZE]: <Wheat className="h-6 w-6" aria-hidden="true" />,
+  [Crop.TOMATO]: <Leaf className="h-6 w-6" aria-hidden="true" />,
+  [Crop.CASSAVA]: <Sprout className="h-6 w-6" aria-hidden="true" />,
+  [Crop.EGGS_TRAY]: <Egg className="h-6 w-6" aria-hidden="true" />,
 };
 
 export default async function MarketPage() {
@@ -37,9 +47,7 @@ export default async function MarketPage() {
       console.warn("Market history unavailable:", error);
       return null;
     }),
-    ...OTHER_CROPS.map((crop) =>
-      provider.getHistory(crop, 2).catch(() => null),
-    ),
+    ...OTHER_CROPS.map((crop) => provider.getHistory(crop, 2).catch(() => null)),
   ]);
 
   const otherCrops = OTHER_CROPS.map((crop, index) => {
@@ -72,85 +80,91 @@ export default async function MarketPage() {
 
   const rows = (history ?? [])
     .map((tick, index, all) => {
-      const previous = index > 0 ? all[index - 1] : null;
+      const prior = index > 0 ? all[index - 1] : null;
       const changePct =
-        previous && previous.priceKobo > 0
-          ? ((tick.priceKobo - previous.priceKobo) / previous.priceKobo) * 100
+        prior && prior.priceKobo > 0
+          ? ((tick.priceKobo - prior.priceKobo) / prior.priceKobo) * 100
           : null;
       return { ...tick, changePct };
     })
     .slice(-7);
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold text-text">Market</h1>
-        <p className="mt-1 max-w-[70ch] leading-6 text-muted">
+    <div className="flex flex-col gap-space-xl">
+      <header className="flex flex-col gap-space-xs">
+        <div className="flex flex-wrap items-center gap-space-sm">
+          <h1 className="text-headline-lg tracking-tight text-text">
+            Prices today
+          </h1>
+          <DataSourceBadge kind="simulated" />
+        </div>
+        <p className="max-w-[70ch] text-body-lg leading-7 text-muted">
           What a tray of 30 eggs is fetching. The price feeds the stock value
           and the profit numbers.
         </p>
       </header>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      {/* Egg tray card + the 7-day table side by side */}
+      <div className="grid gap-space-lg lg:grid-cols-3">
         <EggPriceCard data={eggPrice} />
 
         <section className={`lg:col-span-2 ${card}`} aria-labelledby="price-table">
-          <div className="flex items-start justify-between gap-3">
-            <h2 id="price-table" className="text-lg font-semibold text-text">
+          <div className="flex flex-wrap items-start justify-between gap-space-sm">
+            <h2 id="price-table" className="text-headline-sm text-text">
               Egg tray price, last 7 days
             </h2>
             <DataSourceBadge kind="simulated" />
           </div>
 
           {rows.length === 0 ? (
-            <p className="mt-3 text-base leading-6 text-danger">
+            <p className="mt-3 text-body-lg leading-7 text-danger">
               Prices are unavailable right now. Try again in a few minutes.
             </p>
           ) : (
             <div className="mt-3 overflow-x-auto">
-              <table className="w-full border-collapse text-left text-base">
+              <table className="w-full border-collapse text-left text-body-base">
                 <caption className="sr-only">
                   Egg tray price for each of the last 7 days, in naira, with the
                   change from the previous day.
                 </caption>
                 <thead>
-                  <tr className="border-b border-border text-sm text-muted">
-                    <th scope="col" className="py-2 pr-4 font-medium">
+                  <tr className="bg-[#F1F3FF] text-text">
+                    <th scope="col" className="p-space-md font-semibold">
                       Day
                     </th>
-                    <th scope="col" className="py-2 pr-4 text-right font-medium">
+                    <th scope="col" className="p-space-md text-right font-semibold">
                       Price per tray
                     </th>
-                    <th scope="col" className="py-2 text-right font-medium">
+                    <th scope="col" className="p-space-md text-right font-semibold">
                       Change
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border">
                   {rows.map((row) => (
-                    <tr key={row.date} className="border-b border-border last:border-0">
+                    <tr key={row.date} className="hover:bg-[#F1F3FF]/50">
                       <th
                         scope="row"
-                        className="py-3 pr-4 text-left font-normal text-text"
+                        className="p-space-md text-left font-normal text-text"
                       >
                         {formatDayShort(new Date(`${row.date}T12:00:00Z`))}
                       </th>
-                      <td className="py-3 pr-4 text-right tabular-nums text-text">
+                      <td className="p-space-md text-right tabular-nums text-text">
                         {formatNaira(row.priceKobo)}
                       </td>
-                      <td className="py-3 text-right tabular-nums">
+                      <td className="p-space-md text-right tabular-nums">
                         {row.changePct === null ? (
                           <span className="text-muted">—</span>
                         ) : (
                           <span
-                            className={`inline-flex items-center gap-1 font-medium ${
+                            className={`inline-flex items-center gap-1 font-semibold ${
                               row.changePct >= 0 ? "text-success" : "text-danger"
                             }`}
                           >
                             {row.changePct >= 0 ? (
-                              <TrendingUp className="h-4 w-4" aria-hidden="true" />
+                              <TrendingUp className="h-5 w-5" aria-hidden="true" />
                             ) : (
-                              <TrendingDown className="h-4 w-4" aria-hidden="true" />
+                              <TrendingDown className="h-5 w-5" aria-hidden="true" />
                             )}
                             {Math.abs(row.changePct).toFixed(1)}%
                           </span>
@@ -163,56 +177,52 @@ export default async function MarketPage() {
             </div>
           )}
 
-          <p className="mt-3 text-sm leading-6 text-muted">
+          <p className="mt-3 text-body-base leading-6 text-muted">
             The feed is simulated: the same date always gives the same price. A
             real feed can replace it without changing this page.
           </p>
         </section>
       </div>
 
-      {/* The Agriculture rules need prices for at least 3 crops — these
-          three ride the same feed as the tray price. */}
-      <section className={card} aria-labelledby="other-crops">
-        <div className="flex items-start justify-between gap-3">
-          <h2 id="other-crops" className="text-lg font-semibold text-text">
+      {/* Three crop price cards, exactly as the mockup lays them out */}
+      <section aria-labelledby="other-crops">
+        <div className="mb-space-md flex flex-wrap items-center justify-between gap-space-sm">
+          <h2 id="other-crops" className="text-headline-md text-text">
             Other crops, same market feed
           </h2>
           <DataSourceBadge kind="simulated" />
         </div>
-        <ul className="mt-4 grid gap-4 sm:grid-cols-3">
-          {otherCrops.map(({ crop, meta, latest, changePct }) => (
-            <li
-              key={crop}
-              className="rounded-input border border-border bg-surface p-4"
-            >
-              <p className="text-sm font-medium text-muted">{meta.label}</p>
-              <p className="mt-1 text-2xl font-bold tabular-nums text-text">
-                {latest ? formatNaira(latest.priceKobo) : "—"}
-              </p>
-              <p className="text-sm text-muted">{UNIT_WORD[meta.unit]}</p>
+        <div className="grid grid-cols-1 gap-space-lg md:grid-cols-3">
+          {otherCrops.map(({ crop, meta, latest: tick, changePct }) => (
+            <section key={crop} className={card} aria-label={meta.label}>
+              <StatLabel trailing={<span className="text-muted">{CROP_ICON[crop]}</span>}>
+                {meta.label}
+              </StatLabel>
+              <StatValue>{tick ? formatNaira(tick.priceKobo) : "—"}</StatValue>
+              <StatNote>{UNIT_WORD[meta.unit]}</StatNote>
               {changePct === null ? (
-                <p className="mt-2 text-sm text-muted">
+                <p className="mt-1 text-body-base text-muted">
                   No change to show yet.
                 </p>
               ) : (
                 <p
-                  className={`mt-2 inline-flex items-center gap-1 text-sm font-medium ${
+                  className={`mt-1 inline-flex items-center gap-1 text-label-base font-semibold ${
                     changePct >= 0 ? "text-success" : "text-danger"
                   }`}
                 >
                   {changePct >= 0 ? (
-                    <TrendingUp className="h-4 w-4" aria-hidden="true" />
+                    <TrendingUp className="h-5 w-5" aria-hidden="true" />
                   ) : (
-                    <TrendingDown className="h-4 w-4" aria-hidden="true" />
+                    <TrendingDown className="h-5 w-5" aria-hidden="true" />
                   )}
                   {changePct >= 0 ? "Up" : "Down"}{" "}
                   {Math.abs(changePct).toFixed(1)}% vs yesterday
                 </p>
               )}
-            </li>
+            </section>
           ))}
-        </ul>
-        <p className="mt-3 text-sm leading-6 text-muted">
+        </div>
+        <p className="mt-3 text-body-base leading-6 text-muted">
           Sample base prices. A poultry or produce expert must confirm them
           before real use.
         </p>
@@ -220,7 +230,7 @@ export default async function MarketPage() {
 
       <PriceChartCard
         id="market-price-chart"
-        title="Egg tray price history"
+        title="Price chart"
         badge={<DataSourceBadge kind="simulated" />}
         series={series}
         emptySentence="Prices are unavailable right now."

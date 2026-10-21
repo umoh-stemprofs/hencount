@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { PieChart } from "lucide-react";
 import { formatDayShort, formatNaira } from "@/lib/dates";
+import { btnSecondary } from "@/components/ui";
 import { ChartCard, ChartSkeleton, type ChartTableData } from "./ChartCard";
 import type { StockSlice } from "@/lib/charts";
 
@@ -18,6 +19,7 @@ const StockPieChart = dynamic(() => import("./StockPieChart"), {
 export function StockPieCard({
   id,
   title,
+  icon,
   badge,
   slices,
   priceDate,
@@ -26,6 +28,7 @@ export function StockPieCard({
 }: {
   id: string;
   title: string;
+  icon?: React.ReactNode;
   badge?: React.ReactNode;
   slices: StockSlice[];
   /** "YYYY-MM-DD" of the tray price behind these values, for the table. */
@@ -48,6 +51,7 @@ export function StockPieCard({
     <ChartCard
       id={id}
       title={title}
+      icon={icon}
       badge={badge}
       table={table}
       empty={
@@ -56,10 +60,7 @@ export function StockPieCard({
               Icon: PieChart,
               sentence: emptySentence,
               action: (
-                <Link
-                  href={emptyAction.href}
-                  className="inline-flex h-11 items-center rounded-input bg-accent px-4 text-sm font-semibold text-white"
-                >
+                <Link href={emptyAction.href} className={btnSecondary}>
                   {emptyAction.label}
                 </Link>
               ),
@@ -70,7 +71,7 @@ export function StockPieCard({
       <div>
         <StockPieChart slices={slices} />
         {priceDate && (
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-body-base leading-6 text-muted">
             Values at today&apos;s tray price ·{" "}
             {formatDayShort(new Date(`${priceDate}T12:00:00Z`))}
           </p>

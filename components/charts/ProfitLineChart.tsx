@@ -18,10 +18,10 @@ import {
 import type { ReactNode } from "react";
 import { formatDayAxis, formatNaira } from "@/lib/dates";
 import {
+  ACCENT_SERIES,
   AXIS_TEXT,
   GRID_COLOR,
   LOSS_COLOR,
-  SERIES_COLORS,
 } from "./ChartCard";
 import { ChartTooltip, type TooltipRow } from "./ChartTooltip";
 import type { ProfitPoint } from "@/lib/charts";
@@ -47,7 +47,7 @@ function profitDot(props: ProfitDotProps): ReactNode {
       cx={cx}
       cy={cy}
       r={isLoss ? 5 : 3.5}
-      fill={isLoss ? LOSS_COLOR : SERIES_COLORS[0]}
+      fill={isLoss ? LOSS_COLOR : ACCENT_SERIES}
       strokeWidth={0}
     />
   );
@@ -84,7 +84,7 @@ export default function ProfitLineChart({
             value: "₦",
             angle: -90,
             position: "insideLeft",
-            style: { fontSize: 12, fill: "#475467", textAnchor: "start" },
+            style: { fontSize: 16, fill: "#475467", textAnchor: "start" },
           }}
         />
         {/* Zero: the line between earning and losing. */}
@@ -111,8 +111,10 @@ export default function ProfitLineChart({
         <Line
           dataKey="profitKobo"
           name="Profit"
-          stroke={SERIES_COLORS[0]}
-          strokeWidth={2}
+          stroke={ACCENT_SERIES}
+          strokeWidth={4}
+          strokeLinecap="round"
+          strokeLinejoin="round"
           dot={profitDot}
           connectNulls={false}
           isAnimationActive={false}

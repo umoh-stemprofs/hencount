@@ -1,0 +1,417 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary-container":"#9a5b00","error-container":"#ffdad6","on-primary":"#ffffff","tertiary-fixed":"#98f8a5","on-primary-fixed-variant":"#693c00","tertiary-fixed-dim":"#7cdb8b","inverse-on-surface":"#edf0ff","error":"#ba1a1a","surface-bright":"#f9f9ff","on-surface":"#141b2c","surface-container-highest":"#dbe2f9","secondary-fixed":"#dae2ff","surface-container-lowest":"#ffffff","surface-dim":"#d2daf0","surface-container":"#e9edff","on-tertiary-fixed":"#002109","inverse-primary":"#ffb86e","primary":"#784600","primary-fixed-dim":"#ffb86e","tertiary":"#005f27","on-secondary-fixed-variant":"#0040a0","on-tertiary-fixed-variant":"#005321","secondary-fixed-dim":"#b1c5ff","background":"#f9f9ff","surface-container-low":"#f1f3ff","on-tertiary":"#ffffff","primary-fixed":"#ffdcbd","outline":"#857465","on-background":"#141b2c","surface":"#f9f9ff","tertiary-container":"#137a37","surface-variant":"#dbe2f9","on-primary-container":"#ffe7d2","on-secondary":"#ffffff","secondary-container":"#346ee5","on-tertiary-container":"#a7ffb1","outline-variant":"#d7c3b2","on-error":"#ffffff","on-primary-fixed":"#2c1600","secondary":"#0054cb","on-surface-variant":"#524437","on-secondary-fixed":"#001847","surface-container-high":"#e0e8ff","inverse-surface":"#293041","on-error-container":"#93000a","surface-tint":"#8a5100","on-secondary-container":"#fefcff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"margin-desktop":"3rem","space-md":"1rem","margin":"1rem","space-lg":"1.5rem","space-xs":"0.5rem","gutter-desktop":"2rem","margin-tablet":"2rem","space-xl":"2.5rem","gutter-tablet":"1.5rem","gutter":"1rem","space-sm":"0.75rem"},"fontFamily":{"body-lg-bold":["Inter"],"display-stat":["Inter"],"body-lg":["Inter"],"body-base":["Inter"],"label-lg":["Inter"],"headline-lg":["Inter"],"label-base":["Inter"],"headline-md":["Inter"],"headline-sm":["Inter"]},"fontSize":{"body-lg-bold":["18px",{"lineHeight":"28px","fontWeight":"600"}],"display-stat":["40px",{"lineHeight":"48px","fontWeight":"700"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],"body-base":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-lg":["18px",{"lineHeight":"24px","fontWeight":"600"}],"headline-lg":["28px",{"lineHeight":"36px","fontWeight":"700"}],"label-base":["16px",{"lineHeight":"20px","fontWeight":"600"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-base text-body-base text-on-surface antialiased"><aside class="fixed left-0 top-0 bottom-0 w-72 bg-surface-container-lowest z-50 flex flex-col justify-between p-space-lg shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-xl"><div class="flex items-center gap-space-sm px-space-xs"><span class="material-symbols-outlined text-primary text-[32px]">egg</span><span class="font-headline-md text-headline-md text-primary tracking-tight">HenCount</span></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary font-body-lg-bold text-body-lg-bold rounded-xl"><a class="flex items-center gap-space-md min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-lg text-body-lg" data-path="home" href="#"><span class="material-symbols-outlined text-[24px]">home</span><span class="">Home</span></a><a class="flex items-center gap-space-md min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-lg text-body-lg" data-path="eggs" href="#"><span class="material-symbols-outlined text-[24px]">egg</span><span class="">Eggs</span></a><a class="flex items-center gap-space-md min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-lg text-body-lg" data-path="prices" href="#"><span class="material-symbols-outlined text-[24px]">sell</span><span class="">Prices</span></a><a class="flex items-center gap-space-md min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-lg text-body-lg" data-path="weather" href="#"><span class="material-symbols-outlined text-[24px]">partly_cloudy_day</span><span class="">Weather</span></a><a class="flex items-center gap-space-md min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-lg text-body-lg" data-path="settings" href="#"><span class="material-symbols-outlined text-[24px]">settings</span><span class="">Settings</span></a></nav></div><div class="p-space-md rounded-xl bg-surface-container-low flex items-center gap-space-sm"><span class="w-3 h-3 rounded-full bg-tertiary"></span><div class="flex flex-col"><span class="font-label-base text-label-base text-on-surface">Barn Online</span><span class="font-body-base text-body-base text-tertiary">Connected</span></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"></header><main class="flex-1 pt-16 bg-surface"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1200px] mx-auto px-gutter-desktop py-space-xl flex flex-col gap-space-xl">
+<!-- Breadcrumb & Page Header -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm text-on-surface-variant font-body-base text-body-base">
+<a class="inline-flex items-center gap-1 text-primary hover:text-primary-container font-label-base text-label-base transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span class="">Back</span>
+</a>
+<span class="">/</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">My hens</span>
+<span class="">/</span>
+<span class="hover:text-on-surface transition-colors cursor-pointer">Mango Creek layers</span>
+<span class="">/</span>
+<span class="text-on-surface font-label-base text-label-base">Sell eggs</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-sm pt-space-xs">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Sell eggs</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-1">Record eggs leaving the farm and money coming in.</p>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-high text-secondary px-space-md py-space-xs rounded-full self-start md:self-auto shadow-sm">
+<span class="material-symbols-outlined text-[20px]">science</span>
+<span class="font-label-base text-label-base">Simulated Test Flock</span>
+</div>
+</div>
+</div>
+<!-- Main Grid: 2 Columns for Desktop (Sales Calculator on Left, Safety & Ledger on Right) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- Left Column: Primary Transaction Forms -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- 1. Store Stock Status Banner Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1">
+<span class="font-label-base text-label-base text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">inventory_2</span>
+              Eggs currently in store
+            </span>
+<div class="flex items-baseline gap-space-sm">
+<span class="font-display-stat text-display-stat text-on-surface" id="currentStoreCount">894</span>
+<span class="font-headline-sm text-headline-sm text-on-surface-variant font-semibold">eggs</span>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant">Mango Creek cooling store • Room 02</p>
+</div>
+<div class="sm:text-right bg-surface-container-low p-space-md rounded-lg flex flex-col justify-center">
+<span class="font-label-base text-label-base text-on-surface-variant">Total store valuation</span>
+<span class="font-headline-md text-headline-md text-tertiary">₦122,895</span>
+</div>
+</div>
+<!-- 2. Interactive Stepper Card (Eggs Sold) -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex justify-between items-center">
+<label class="font-headline-sm text-headline-sm text-on-surface" for="trayInputCount">Eggs sold</label>
+<span class="text-on-surface-variant font-body-base text-body-base">Standard: 30 eggs / tray</span>
+</div>
+<!-- Massive Stepper Controls -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between gap-space-md">
+<button aria-label="Decrease by one tray" class="w-14 h-14 min-w-[56px] min-h-[56px] rounded-lg bg-surface-container-lowest text-on-surface flex items-center justify-center shadow-sm active:bg-surface-container hover:bg-surface-container-lowest focus:outline-none transition-colors" id="btnMinus" type="button">
+<span class="material-symbols-outlined text-[32px]">remove</span>
+</button>
+<div class="flex flex-col items-center">
+<div class="flex items-baseline gap-1">
+<input class="w-28 text-center bg-transparent font-display-stat text-display-stat text-on-surface focus:outline-none font-bold" id="trayInputCount" min="0" step="30" type="number" value="120">
+<span class="font-headline-md text-headline-md text-on-surface">eggs</span>
+</div>
+<span class="font-body-base text-body-base text-on-surface-variant" id="trayCountDisplay">120 eggs = 4 full trays of 30</span>
+</div>
+<button aria-label="Increase by one tray" class="w-14 h-14 min-w-[56px] min-h-[56px] rounded-lg bg-surface-container-lowest text-on-surface flex items-center justify-center shadow-sm active:bg-surface-container hover:bg-surface-container-lowest focus:outline-none transition-colors" id="btnPlus" type="button">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</button>
+</div>
+<!-- Quick Selector Buttons -->
+<div class="flex flex-col gap-2">
+<span class="font-label-base text-label-base text-on-surface-variant">Quick tray selection:</span>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs">
+<button class="tray-preset-btn min-h-[52px] rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center transition-colors" data-trays="1" type="button">
+<span class="">1 Tray</span>
+<span class="font-body-base text-body-base text-on-surface-variant text-[14px] leading-tight">30 eggs</span>
+</button>
+<button class="tray-preset-btn min-h-[52px] rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center transition-colors" data-trays="2" type="button">
+<span class="">2 Trays</span>
+<span class="font-body-base text-body-base text-on-surface-variant text-[14px] leading-tight">60 eggs</span>
+</button>
+<button class="tray-preset-btn min-h-[52px] rounded-lg bg-primary-container text-on-primary font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center shadow-sm transition-colors" data-trays="4" type="button">
+<span class="">4 Trays</span>
+<span class="font-body-base text-body-base text-on-primary-container text-[14px] leading-tight">120 eggs</span>
+</button>
+<button class="tray-preset-btn min-h-[52px] rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center transition-colors" data-trays="10" type="button">
+<span class="">10 Trays</span>
+<span class="font-body-base text-body-base text-on-surface-variant text-[14px] leading-tight">300 eggs</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 3. Price per Tray Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<label class="font-headline-sm text-headline-sm text-on-surface" for="priceInput">Price for one tray (30 eggs)</label>
+<button class="flex items-center gap-1 text-primary hover:text-primary-container font-label-base text-label-base" id="editPriceBtn" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+<span class="">Edit</span>
+</button>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex-1 bg-surface-container-low rounded-lg px-space-md py-space-sm flex items-center justify-between">
+<span class="font-headline-lg text-headline-lg text-on-surface" id="priceDisplay">₦4,124</span>
+<span class="text-on-surface-variant font-body-base text-body-base">Per 30-egg tray</span>
+</div>
+<input class="hidden w-40 min-h-[52px] px-space-md bg-surface-container-lowest text-on-surface font-headline-md text-headline-md rounded-lg shadow-inner focus:outline-none" id="priceInput" type="number" value="4124">
+</div>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-base text-body-base">
+<span class="material-symbols-outlined text-[20px] text-secondary">info</span>
+<span class="">This is today's prevailing market price. You can adjust if agreed differently.</span>
+</div>
+</div>
+<!-- 4. Dynamic Live Result Card -->
+<div class="bg-tertiary-container/10 rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm" id="liveResultCard">
+<div class="flex justify-between items-center">
+<span class="font-label-lg text-label-lg text-tertiary font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+              Expected Cash Return
+            </span>
+<span class="bg-tertiary text-on-tertiary font-label-base text-label-base px-space-sm py-1 rounded-full" id="calculatedTraysBadge">4 trays</span>
+</div>
+<div class="flex items-baseline gap-space-xs pt-1">
+<span class="font-display-stat text-display-stat text-on-surface tracking-tight" id="totalAmountDisplay">₦16,496</span>
+</div>
+<div class="flex items-center justify-between pt-space-xs text-on-surface-variant font-body-base text-body-base">
+<span id="calculationFormula" class="">₦4,124 × 4 trays</span>
+<span class="text-tertiary font-label-base text-label-base flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+              Full payment expected
+            </span>
+</div>
+</div>
+<!-- 5. Main Action Buttons -->
+<div class="flex flex-col sm:flex-row items-center gap-space-md pt-space-xs">
+<button class="w-full sm:flex-1 min-h-[56px] bg-primary-container hover:bg-primary active:bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl shadow-md flex items-center justify-center gap-space-sm transition-colors" id="saveSaleBtn" type="button">
+<span class="material-symbols-outlined text-[24px]">check_circle</span>
+<span class="">Save sale</span>
+</button>
+<a class="w-full sm:w-auto min-h-[56px] px-space-xl rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-space-xs transition-colors" href="#">
+<span class="material-symbols-outlined text-[22px]">close</span>
+<span class="">Cancel</span>
+</a>
+</div>
+</div>
+<!-- Right Column: Safety Verification, Alert Scenarios, Ledger -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Store Validation Safety Card -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[24px]">format_image_left</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Store Safety Rules</h2>
+</div>
+<span class="px-space-sm py-0.5 rounded-full font-label-base text-label-base bg-tertiary-container/20 text-tertiary flex items-center gap-1" id="validationPill"><span class="material-symbols-outlined text-[18px]">check</span> Safe Count</span>
+</div>
+<p class="font-body-base text-body-base text-on-surface-variant">HenCount guards inventory integrity. Sale quantities cannot exceed live cold store supply.</p>
+<!-- Dynamic Comparison Stats Table -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex justify-between items-center text-body-base font-body-base">
+<span class="text-on-surface-variant">Live in store:</span>
+<span class="font-label-lg text-label-lg text-on-surface">894 eggs</span>
+</div>
+<div class="flex justify-between items-center text-body-base font-body-base">
+<span class="text-on-surface-variant">Selected for sale:</span>
+<span class="font-label-lg text-label-lg text-on-surface" id="statAttemptedEggs">120 eggs</span>
+</div>
+<div class="flex justify-between items-center text-body-base font-body-base pt-2">
+<span class="text-on-surface-variant font-semibold">Remaining after sale:</span>
+<span class="font-headline-sm text-headline-sm text-tertiary" id="statRemainingEggs">774 eggs</span>
+</div>
+</div>
+<!-- Alert / Warning Box (Hidden unless limit exceeded) -->
+<div class="hidden bg-error-container/30 text-error p-space-md rounded-xl flex items-start gap-space-sm" id="safetyWarningBox">
+<span class="material-symbols-outlined text-error text-[26px] mt-0.5">warning</span>
+<div class="flex flex-col gap-1">
+<span class="font-label-lg text-label-lg text-error">Inventory Overflow Alert</span>
+<span class="font-body-base text-body-base text-on-surface">You cannot sell more eggs than you have in store. Please check physical stock count before continuing.</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-high/40 text-on-surface-variant font-body-base text-body-base flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-outline">verified_user</span>
+<span class="">Count synced with sensor rack A4</span>
+</div>
+</div>
+<!-- Ledger / Recent Sales Today -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">receipt_long</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Recent sales today</h3>
+</div>
+<span class="font-label-base text-label-base text-secondary bg-surface-container-high px-space-xs py-0.5 rounded-full">2 entries</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Row 1 -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">local_shipping</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-base text-label-base text-on-surface">Morning delivery</span>
+<span class="font-body-base text-body-base text-on-surface-variant">60 eggs • 2 trays</span>
+</div>
+</div>
+<div class="text-right flex flex-col">
+<span class="font-label-lg text-label-lg text-tertiary">+₦8,248</span>
+<span class="font-body-base text-body-base text-on-surface-variant text-[14px]">Cash paid</span>
+</div>
+</div>
+<!-- Row 2 -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container/20 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">bakery_dining</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-base text-label-base text-on-surface">Bakery order</span>
+<span class="font-body-base text-body-base text-on-surface-variant">150 eggs • 5 trays</span>
+</div>
+</div>
+<div class="text-right flex flex-col">
+<span class="font-label-lg text-label-lg text-tertiary">+₦20,620</span>
+<span class="font-body-base text-body-base text-on-surface-variant text-[14px]">Transfer</span>
+</div>
+</div>
+</div>
+<div class="pt-space-xs flex justify-between items-center text-on-surface-variant font-body-base text-body-base">
+<span class="">Today's logged intake:</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">₦28,868</span>
+</div>
+</div>
+<!-- Quick Help Note -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-start gap-space-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[24px] text-primary mt-0.5">contact_support</span>
+<div class="flex flex-col">
+<span class="font-label-base text-label-base text-on-surface">Need a custom receipt?</span>
+<span class="font-body-base text-body-base">Sales automatically sync to the cooperative market sheet and printer queue.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function initEggSalesCalculator() {
+    const storeCapacity = 894;
+    let pricePerTray = 4124;
+    let eggsSold = 120;
+
+    const trayInput = document.getElementById('trayInputCount');
+    const trayCountDisplay = document.getElementById('trayCountDisplay');
+    const btnMinus = document.getElementById('btnMinus');
+    const btnPlus = document.getElementById('btnPlus');
+    const priceDisplay = document.getElementById('priceDisplay');
+    const priceInput = document.getElementById('priceInput');
+    const editPriceBtn = document.getElementById('editPriceBtn');
+    const totalAmountDisplay = document.getElementById('totalAmountDisplay');
+    const calculatedTraysBadge = document.getElementById('calculatedTraysBadge');
+    const calculationFormula = document.getElementById('calculationFormula');
+    const saveSaleBtn = document.getElementById('saveSaleBtn');
+    const presetButtons = document.querySelectorAll('.tray-preset-btn');
+    
+    // Right column elements
+    const statAttemptedEggs = document.getElementById('statAttemptedEggs');
+    const statRemainingEggs = document.getElementById('statRemainingEggs');
+    const safetyWarningBox = document.getElementById('safetyWarningBox');
+    const validationPill = document.getElementById('validationPill');
+
+    function formatNaira(amount) {
+      return '₦' + amount.toLocaleString('en-US');
+    }
+
+    function updateCalculator() {
+      // Validate bounds
+      if (isNaN(eggsSold) || eggsSold < 0) {
+        eggsSold = 0;
+      }
+      
+      trayInput.value = eggsSold;
+      const fullTrays = Math.floor(eggsSold / 30);
+      const remainder = eggsSold % 30;
+
+      // Update descriptor text
+      if (remainder === 0) {
+        trayCountDisplay.textContent = eggsSold + ' eggs = ' + fullTrays + ' full trays of 30';
+        calculatedTraysBadge.textContent = fullTrays + ' trays';
+      } else {
+        trayCountDisplay.textContent = eggsSold + ' eggs = ' + fullTrays + ' trays + ' + remainder + ' loose eggs';
+        calculatedTraysBadge.textContent = (eggsSold / 30).toFixed(1) + ' trays';
+      }
+
+      // Financial calc
+      const totalAmount = Math.round((eggsSold / 30) * pricePerTray);
+      totalAmountDisplay.textContent = formatNaira(totalAmount);
+      calculationFormula.textContent = formatNaira(pricePerTray) + ' × ' + (remainder === 0 ? fullTrays : (eggsSold / 30).toFixed(1)) + ' trays';
+
+      // Update right column metrics
+      statAttemptedEggs.textContent = eggsSold + ' eggs';
+      const remaining = storeCapacity - eggsSold;
+      statRemainingEggs.textContent = remaining + ' eggs';
+
+      // Safety check validation
+      if (eggsSold > storeCapacity) {
+        safetyWarningBox.classList.remove('hidden');
+        statRemainingEggs.classList.remove('text-tertiary');
+        statRemainingEggs.classList.add('text-error');
+        
+        validationPill.className = 'px-space-sm py-0.5 rounded-full font-label-base text-label-base bg-error-container text-error flex items-center gap-1';
+        validationPill.innerHTML = '<span class="material-symbols-outlined text-[18px]">error</span> Exceeded';
+
+        saveSaleBtn.disabled = true;
+        saveSaleBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      } else {
+        safetyWarningBox.classList.add('hidden');
+        statRemainingEggs.classList.add('text-tertiary');
+        statRemainingEggs.classList.remove('text-error');
+
+        validationPill.className = 'px-space-sm py-0.5 rounded-full font-label-base text-label-base bg-tertiary-container/20 text-tertiary flex items-center gap-1';
+        validationPill.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span> Safe Count';
+
+        saveSaleBtn.disabled = false;
+        saveSaleBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      }
+
+      // Update active state on preset buttons
+      presetButtons.forEach(btn => {
+        const trays = parseInt(btn.getAttribute('data-trays'), 10);
+        if (trays * 30 === eggsSold) {
+          btn.className = 'tray-preset-btn min-h-[52px] rounded-lg bg-primary-container text-on-primary font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center shadow-sm transition-colors';
+          const sub = btn.querySelector('span:nth-child(2)');
+          if (sub) sub.className = 'font-body-base text-body-base text-on-primary-container text-[14px] leading-tight';
+        } else {
+          btn.className = 'tray-preset-btn min-h-[52px] rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-base text-label-base px-space-sm py-2 flex flex-col items-center justify-center transition-colors';
+          const sub = btn.querySelector('span:nth-child(2)');
+          if (sub) sub.className = 'font-body-base text-body-base text-on-surface-variant text-[14px] leading-tight';
+        }
+      });
+    }
+
+    // Step handlers
+    btnMinus.addEventListener('click', () => {
+      if (eggsSold >= 30) {
+        eggsSold -= 30;
+        updateCalculator();
+      }
+    });
+
+    btnPlus.addEventListener('click', () => {
+      eggsSold += 30;
+      updateCalculator();
+    });
+
+    trayInput.addEventListener('change', (e) => {
+      eggsSold = parseInt(e.target.value, 10) || 0;
+      updateCalculator();
+    });
+
+    // Preset button handlers
+    presetButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const trays = parseInt(btn.getAttribute('data-trays'), 10);
+        eggsSold = trays * 30;
+        updateCalculator();
+      });
+    });
+
+    // Price editing toggles
+    editPriceBtn.addEventListener('click', () => {
+      if (priceInput.classList.contains('hidden')) {
+        priceInput.classList.remove('hidden');
+        priceDisplay.classList.add('hidden');
+        priceInput.focus();
+        editPriceBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check</span><span>Done</span>';
+      } else {
+        const newPrice = parseInt(priceInput.value, 10);
+        if (!isNaN(newPrice) && newPrice > 0) {
+          pricePerTray = newPrice;
+          priceDisplay.textContent = formatNaira(pricePerTray);
+        }
+        priceInput.classList.add('hidden');
+        priceDisplay.classList.remove('hidden');
+        editPriceBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">edit</span><span>Edit</span>';
+        updateCalculator();
+      }
+    });
+
+    priceInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        editPriceBtn.click();
+      }
+    });
+
+    // Save action feedback
+    saveSaleBtn.addEventListener('click', () => {
+      if (eggsSold > storeCapacity) return;
+      saveSaleBtn.innerHTML = '<span class="material-symbols-outlined text-[24px]">done_all</span><span>Saved Successfully</span>';
+      saveSaleBtn.classList.remove('bg-primary-container');
+      saveSaleBtn.classList.add('bg-tertiary');
+      setTimeout(() => {
+        saveSaleBtn.innerHTML = '<span class="material-symbols-outlined text-[24px]">check_circle</span><span>Save sale</span>';
+        saveSaleBtn.classList.remove('bg-tertiary');
+        saveSaleBtn.classList.add('bg-primary-container');
+      }, 2500);
+    });
+
+    // Initialize display on load
+    updateCalculator();
+  })();
+</script></main><footer class="w-full bg-surface-container-low py-space-lg"><div class="max-w-[1200px] mx-auto px-gutter-desktop text-center"><p class="font-body-base text-body-base text-on-surface-variant">Decision-support tool. You decide.</p></div></footer></div>
+
+</body></html>

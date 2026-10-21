@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HenCount - Log in (Mobile)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F7F8FA;
+      color: #101828;
+      -webkit-font-smoothing: antialiased;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-[#F7F8FA] flex flex-col justify-between p-4 max-w-[390px] mx-auto antialiased">
+  <!-- Top Bar -->
+  <header class="w-full pt-3 pb-4 flex items-center justify-between border-b border-[#EAECF0]">
+    <div class="text-[26px] font-bold tracking-tight text-[#101828]">
+      HenCount
+    </div>
+    <!-- Simple language indicator or calm status badge -->
+    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#D0D5DD] text-[#475467] text-[16px] font-medium">
+      <i data-lucide="shield-check" class="w-4 h-4 text-[#1B7F3B]"></i>
+      <span>Secure</span>
+    </div>
+  </header>
+
+  <!-- Main Login Card Area -->
+  <main class="flex-1 flex flex-col justify-center py-6">
+    <div class="bg-white rounded-[12px] p-6 border border-[#EAECF0] shadow-sm flex flex-col gap-5">
+      
+      <!-- Screen Heading & Purpose -->
+      <div class="flex flex-col gap-1.5">
+        <h1 class="text-[26px] font-bold text-[#101828] leading-tight">
+          Log in
+        </h1>
+        <p class="text-[18px] text-[#475467] leading-relaxed">
+          Write down your eggs and feed. See your money.
+        </p>
+      </div>
+
+      <!-- Error Message Card -->
+      <div class="bg-[#FEF3F2] border-2 border-[#FECDCA] rounded-[10px] p-4 flex items-start gap-3">
+        <div class="text-[#B42318] flex-shrink-0 mt-0.5">
+          <i data-lucide="alert-circle" class="w-6 h-6 stroke-[2.2]"></i>
+        </div>
+        <div class="flex-1">
+          <p class="text-[17px] font-semibold text-[#B42318] leading-snug">
+            Wrong email or password.
+          </p>
+          <p class="text-[16px] text-[#B42318] mt-0.5">
+            Try again.
+          </p>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <form class="flex flex-col gap-5" onsubmit="event.preventDefault()">
+        <!-- Email Field -->
+        <div class="flex flex-col gap-2">
+          <label for="email" class="text-[18px] font-semibold text-[#101828] flex items-center gap-2">
+            <i data-lucide="mail" class="w-5 h-5 text-[#475467] stroke-[2]"></i>
+            <span>Email</span>
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            value="farmer.john@farmmail.ng"
+            class="w-full h-[54px] px-4 rounded-[10px] border-2 border-[#D0D5DD] bg-[#FAFAFA] text-[18px] text-[#101828] focus:border-[#9A5B00] focus:bg-white focus:outline-none transition-colors"
+          />
+        </div>
+
+        <!-- Password Field -->
+        <div class="flex flex-col gap-2">
+          <label for="password" class="text-[18px] font-semibold text-[#101828] flex items-center gap-2">
+            <i data-lucide="lock" class="w-5 h-5 text-[#475467] stroke-[2]"></i>
+            <span>Password</span>
+          </label>
+          <div class="relative flex items-center">
+            <input 
+              type="password" 
+              id="password" 
+              value="••••••••••••"
+              class="w-full h-[54px] pl-4 pr-24 rounded-[10px] border-2 border-[#B42318] bg-[#FFFBFB] text-[18px] text-[#101828] focus:border-[#9A5B00] focus:bg-white focus:outline-none transition-colors"
+            />
+            <button 
+              type="button" 
+              id="togglePassword"
+              class="absolute right-2.5 h-[40px] px-3 rounded-[8px] bg-[#F2F4F7] hover:bg-[#EAECF0] text-[#101828] text-[16px] font-semibold flex items-center gap-1.5 focus:outline-none border border-[#D0D5DD]"
+            >
+              <i data-lucide="eye" class="w-4 h-4 stroke-[2]"></i>
+              <span>Show</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Button: 56px tall, full width -->
+        <button 
+          type="submit" 
+          class="w-full h-[56px] mt-2 rounded-[12px] bg-[#9A5B00] hover:bg-[#834d00] active:bg-[#6c4000] text-white text-[18px] font-bold flex items-center justify-center gap-2.5 shadow-sm transition-colors focus:ring-4 focus:ring-[#9A5B00]/30 focus:outline-none"
+        >
+          <i data-lucide="log-in" class="w-6 h-6 stroke-[2.2]"></i>
+          <span>Log in</span>
+        </button>
+      </form>
+
+      <!-- Secondary Links (Words with clear icons) -->
+      <div class="flex flex-col gap-3 pt-2 border-t border-[#F2F4F7]">
+        <button type="button" class="w-full h-[48px] rounded-[10px] bg-transparent hover:bg-[#F9FAFB] text-[#9A5B00] text-[18px] font-semibold flex items-center justify-center gap-2 border border-[#EAECF0]">
+          <i data-lucide="play-circle" class="w-5 h-5 stroke-[2]"></i>
+          <span>Try demo account</span>
+        </button>
+
+        <button type="button" class="w-full h-[48px] rounded-[10px] bg-transparent hover:bg-[#F9FAFB] text-[#475467] hover:text-[#101828] text-[18px] font-semibold flex items-center justify-center gap-2">
+          <i data-lucide="user-plus" class="w-5 h-5 stroke-[2]"></i>
+          <span>Make an account</span>
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Required Footer Line -->
+  <footer class="w-full py-4 text-center border-t border-[#EAECF0]">
+    <p class="text-[16px] text-[#475467] font-medium flex items-center justify-center gap-1.5">
+      <i data-lucide="help-circle" class="w-4 h-4 text-[#98A2B3]"></i>
+      <span>Decision-support tool. You decide.</span>
+    </p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    // Show/Hide password toggle logic
+    const toggleBtn = document.getElementById('togglePassword');
+    const pwdInput = document.getElementById('password');
+    let isShown = false;
+
+    if (toggleBtn && pwdInput) {
+      toggleBtn.addEventListener('click', () => {
+        isShown = !isShown;
+        pwdInput.type = isShown ? 'text' : 'password';
+        const span = toggleBtn.querySelector('span');
+        if (span) span.textContent = isShown ? 'Hide' : 'Show';
+      });
+    }
+  </script>
+</body>
+</html>

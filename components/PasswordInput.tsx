@@ -1,15 +1,19 @@
 "use client";
 
-// Password field with a show/hide toggle (design.md S-LOGIN-W).
+// Password field with a show/hide toggle (docs/design.md S-LOGIN-W),
+// matching the mockup: a 54px field, an 18px permanent label above it, and
+// an inside-right toggle that says "Show"/"Hide" in words rather than relying
+// on a bare eye icon.
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { fieldLabel, helper, input } from "./ui";
 
 export function PasswordInput({
   id,
   name,
   label,
   autoComplete,
-  helper,
+  helper: helperText,
 }: {
   id: string;
   name: string;
@@ -20,10 +24,10 @@ export function PasswordInput({
   const [visible, setVisible] = useState(false);
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-text">
+      <label htmlFor={id} className={fieldLabel}>
         {label}
       </label>
-      <div className="relative">
+      <div className="relative mt-1">
         <input
           id={id}
           name={name}
@@ -31,22 +35,24 @@ export function PasswordInput({
           autoComplete={autoComplete}
           required
           minLength={name === "password" ? 8 : undefined}
-          className="mt-1 h-12 w-full rounded-input border border-border bg-surface px-3 pr-12 text-base text-text placeholder:text-muted"
+          className={`${input} pr-24`}
         />
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
           aria-label={visible ? "Hide password" : "Show password"}
-          className="absolute right-1 top-1 inline-flex h-10 w-10 items-center justify-center rounded-input text-muted hover:text-text"
+          aria-pressed={visible}
+          className="absolute right-1.5 top-1/2 inline-flex h-10 -translate-y-1/2 items-center gap-1.5 rounded-chip border border-border-strong bg-[#F2F4F7] px-3 text-label-base text-text transition-colors hover:bg-border"
         >
           {visible ? (
             <EyeOff className="h-4 w-4" aria-hidden="true" />
           ) : (
             <Eye className="h-4 w-4" aria-hidden="true" />
           )}
+          <span>{visible ? "Hide" : "Show"}</span>
         </button>
       </div>
-      {helper && <p className="mt-1 text-sm text-muted">{helper}</p>}
+      {helperText && <p className={helper}>{helperText}</p>}
     </div>
   );
 }

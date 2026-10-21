@@ -4,15 +4,19 @@
 import { Crop } from "@prisma/client";
 import {
   AlertTriangle,
+  Banknote,
   CheckCircle2,
   ChevronLeft,
   Clock3,
+  Egg,
   Info,
+  Plus,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StatCard } from "@/components/StatCard";
 import { DataSourceBadge } from "@/components/DataSourceBadge";
+import { btnPrimary, btnSecondary, card } from "@/components/ui";
 import { EggBarsCard } from "@/components/charts/EggBarsCard";
 import { ProfitCard } from "@/components/charts/ProfitCard";
 import { adviceFor, dayMoney, metricsFor } from "@/lib/eggs";
@@ -157,45 +161,64 @@ export default async function AdvicePage({
       <div>
         <Link
           href="/eggs"
-          className="inline-flex items-center gap-1 text-sm font-medium text-accent"
+          className="inline-flex items-center gap-1 text-body-base font-semibold text-accent"
         >
-          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          <ChevronLeft className="h-5 w-5" aria-hidden="true" />
           All flocks
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-text">Advice</h1>
-        <p className="mt-1 max-w-[70ch] leading-6 text-muted">
-          {flock.name} · based on the last {advice.daysUsed} day
+        <h1 className="mt-2 text-headline-lg tracking-tight text-text">
+          Advice for {flock.name}
+        </h1>
+        <p className="mt-1 max-w-[70ch] text-body-lg leading-7 text-muted">
+          Based on the last {advice.daysUsed} day
           {advice.daysUsed === 1 ? "" : "s"} logged.
         </p>
       </div>
 
-      <section className="rounded-card border border-border bg-surface p-6 shadow-card">
+      {/* The mockup's hero: the status in words first, then the two numbers
+          it was decided from, at display-stat. */}
+      <section className={card} aria-labelledby="advice-status">
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${pill.className}`}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-label-base font-semibold ${pill.className}`}
         >
-          <PillIcon className="h-4 w-4" aria-hidden="true" />
+          <PillIcon className="h-5 w-5" aria-hidden="true" />
           {pill.label}
         </span>
-        <p className="mt-4 max-w-[60ch] text-lg font-medium leading-7 text-text">
+        <p id="advice-status" className="mt-4 max-w-[24ch] text-headline-lg text-text">
           {advice.message}
         </p>
-        {advice.status === "KEEP_ADDING" ? (
-          <p className="mt-2 text-sm text-muted">
+
+        <div className="mt-space-lg grid grid-cols-1 gap-space-md sm:grid-cols-2">
+          <div>
+            <p className="text-label-base text-muted">Average laying rate</p>
+            <p className="text-display-stat tabular-nums text-text">
+              {advice.avgLayingRatePct === null
+                ? "—"
+                : `${Math.round(advice.avgLayingRatePct)}%`}
+            </p>
+          </div>
+          <div>
+            <p className="text-label-base text-muted">Average feed per hen</p>
+            <p className="text-display-stat tabular-nums text-text">
+              {advice.avgFeedPerHenG === null
+                ? "—"
+                : `${Math.round(advice.avgFeedPerHenG)} g`}
+            </p>
+          </div>
+        </div>
+
+        {advice.status === "KEEP_ADDING" && (
+          <p className="mt-3 text-body-base leading-6 text-muted">
             {advice.daysUsed} of 3 days logged. Advice needs 3.
           </p>
-        ) : (
-          <p className="mt-2 text-sm text-muted">
-            Average laying rate {advice.avgLayingRatePct?.toFixed(0)}% · average
-            feed per hen {advice.avgFeedPerHenG?.toFixed(0)} g.
-          </p>
         )}
-        <p className="mt-4 text-sm text-muted">
+        <p className="mt-space-md text-body-base leading-6 text-muted">
           These thresholds are samples. A poultry expert must confirm them
           before you act on them.
         </p>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-space-md sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           label="Eggs per 100 hens"
           value={metrics ? `${Math.round(metrics.layingRatePct)}%` : "—"}
@@ -242,10 +265,11 @@ export default async function AdvicePage({
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-space-lg lg:grid-cols-2">
         <EggBarsCard
           id="advice-eggs"
-          title="Eggs per day, last 7 days"
+          icon={<Egg className="h-6 w-6 text-accent" aria-hidden="true" />}
+          title="Eggs this week"
           badge={<DataSourceBadge kind="saved" />}
           points={eggPoints}
           showThreshold
@@ -254,6 +278,7 @@ export default async function AdvicePage({
         />
         <ProfitCard
           id="advice-profit"
+          icon={<Banknote className="h-6 w-6 text-accent" aria-hidden="true" />}
           title="Profit per day"
           badge={<DataSourceBadge kind="simulated" detail="tray price" />}
           points={profitPoints}
@@ -262,22 +287,17 @@ export default async function AdvicePage({
         />
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          href={`/eggs/${flock.id}/add`}
-          className="inline-flex h-12 items-center rounded-input bg-accent px-4 text-base font-semibold text-white"
-        >
+      <div className="flex flex-wrap gap-space-sm">
+        <Link href={`/eggs/${flock.id}/add`} className={btnPrimary}>
+          <Plus className="h-6 w-6" aria-hidden="true" />
           Add today
         </Link>
-        <Link
-          href={`/eggs/${flock.id}/sell`}
-          className="inline-flex h-12 items-center rounded-input border border-border bg-surface px-4 text-base font-semibold text-text hover:bg-bg"
-        >
+        <Link href={`/eggs/${flock.id}/sell`} className={btnSecondary}>
           Sell eggs
         </Link>
       </div>
 
-      <p className="max-w-[70ch] text-sm leading-6 text-muted">
+      <p className="max-w-[70ch] text-body-base leading-6 text-muted">
         Advice is checked again every time you save a day.
       </p>
     </div>

@@ -1,14 +1,16 @@
 "use client";
 
-// Market chart card: the egg tray price over 7, 30 or 90 days (design.md
-// S-MARKET). The toggle switches the visible window; "View as table" shows
-// exactly the same window as rows. No prices at all → one sentence and one
-// button, never a blank axes frame.
+// Market chart card: the egg tray price over 7, 30 or 90 days
+// (docs/design.md S-MARKET), with the mockup's segmented range control in the
+// accordion header. "Show numbers" below the chart shows exactly the same
+// window as rows. No prices at all → one sentence and one button, never a
+// blank axes frame.
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { LineChart as LineChartIcon } from "lucide-react";
+import { LineChart as LineChartIcon, TrendingUp } from "lucide-react";
 import { formatDayShort, formatNaira } from "@/lib/dates";
+import { btnSecondary } from "@/components/ui";
 import { ChartCard, ChartSkeleton, type ChartTableData } from "./ChartCard";
 import type { PricePoint } from "./PriceLineChart";
 
@@ -23,6 +25,7 @@ type Range = (typeof RANGES)[number];
 export function PriceChartCard({
   id,
   title,
+  icon,
   badge,
   series,
   emptySentence,
@@ -30,6 +33,7 @@ export function PriceChartCard({
 }: {
   id: string;
   title: string;
+  icon?: React.ReactNode;
   badge?: React.ReactNode;
   /** Up to 90 days, oldest first, ending today. */
   series: PricePoint[];
@@ -52,9 +56,11 @@ export function PriceChartCard({
     })),
   };
 
+  // DESIGN.md: selection controls are chunky and never rely on colour alone,
+  // so the active range carries aria-pressed as well as the ochre fill.
   const controls = isEmpty ? undefined : (
-    <div
-      className="inline-flex rounded-input border border-border bg-surface p-0.5"
+    <span
+      className="flex items-center gap-1 rounded-xl bg-[#F1F3FF] p-1"
       role="group"
       aria-label="Chart range"
     >
@@ -64,22 +70,23 @@ export function PriceChartCard({
           type="button"
           aria-pressed={range === value}
           onClick={() => setRange(value)}
-          className={`h-8 rounded-[6px] px-3 text-sm font-medium transition-colors ${
+          className={`min-h-[44px] rounded-lg px-space-md text-label-base transition-colors ${
             range === value
               ? "bg-accent text-white"
-              : "text-muted hover:text-text"
+              : "text-muted hover:bg-[#E0E8FF] hover:text-text"
           }`}
         >
           {value} days
         </button>
       ))}
-    </div>
+    </span>
   );
 
   return (
     <ChartCard
       id={id}
       title={title}
+      icon={icon ?? <TrendingUp className="h-6 w-6 text-accent" aria-hidden="true" />}
       badge={badge}
       table={table}
       controls={controls}
@@ -89,10 +96,7 @@ export function PriceChartCard({
               Icon: LineChartIcon,
               sentence: emptySentence,
               action: (
-                <Link
-                  href={emptyAction.href}
-                  className="inline-flex h-11 items-center rounded-input bg-accent px-4 text-sm font-semibold text-white"
-                >
+                <Link href={emptyAction.href} className={btnSecondary}>
                   {emptyAction.label}
                 </Link>
               ),

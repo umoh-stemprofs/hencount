@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import { formatDayShort, formatNaira } from "@/lib/dates";
+import { btnSecondary } from "@/components/ui";
 import { ChartCard, ChartSkeleton, type ChartTableData } from "./ChartCard";
 import type { ProfitPoint } from "@/lib/charts";
 
@@ -18,6 +19,7 @@ const ProfitLineChart = dynamic(() => import("./ProfitLineChart"), {
 export function ProfitCard({
   id,
   title,
+  icon,
   badge,
   points,
   emptySentence,
@@ -26,6 +28,7 @@ export function ProfitCard({
 }: {
   id: string;
   title: string;
+  icon?: React.ReactNode;
   badge?: React.ReactNode;
   points: ProfitPoint[];
   emptySentence: string;
@@ -58,6 +61,7 @@ export function ProfitCard({
     <ChartCard
       id={id}
       title={title}
+      icon={icon}
       badge={badge}
       table={table}
       empty={
@@ -66,10 +70,7 @@ export function ProfitCard({
               Icon: TrendingUp,
               sentence: emptySentence,
               action: (
-                <Link
-                  href={emptyAction.href}
-                  className="inline-flex h-11 items-center rounded-input bg-accent px-4 text-sm font-semibold text-white"
-                >
+                <Link href={emptyAction.href} className={btnSecondary}>
                   {emptyAction.label}
                 </Link>
               ),

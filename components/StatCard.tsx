@@ -1,5 +1,8 @@
-// Stat card (design.md §2): label, big number, small note. Numbers are
-// tabular so columns line up.
+// Stat card (docs/design.md §2): label row, the 40px display-stat number,
+// then a caption. DESIGN.md "Cards": the metric is isolated from surrounding
+// text so it can be read at a glance in a barn.
+import { card, StatLabel, StatNote, StatValue } from "./ui";
+
 export function StatCard({
   label,
   value,
@@ -13,21 +16,11 @@ export function StatCard({
   tone?: "default" | "danger" | "success";
   badge?: React.ReactNode;
 }) {
-  const valueTone =
-    tone === "danger" ? "text-danger" : tone === "success" ? "text-success" : "text-text";
   return (
-    <section
-      className="rounded-card border border-border bg-surface p-6 shadow-card"
-      aria-label={label}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-sm font-medium text-muted">{label}</h2>
-        {badge}
-      </div>
-      <p className={`mt-2 text-4xl font-bold tabular-nums ${valueTone}`}>
-        {value}
-      </p>
-      {note && <p className="mt-1 text-sm leading-6 text-muted">{note}</p>}
+    <section className={card} aria-label={label}>
+      <StatLabel trailing={badge}>{label}</StatLabel>
+      <StatValue tone={tone}>{value}</StatValue>
+      {note && <StatNote>{note}</StatNote>}
     </section>
   );
 }

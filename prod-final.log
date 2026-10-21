@@ -1,0 +1,41 @@
+
+> hencount@0.1.0 start
+> next start -p 3001
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3001
+
+ ✓ Starting...
+ ✓ Ready in 2s
+PrismaClientKnownRequestError: 
+Invalid `prisma.farm.findFirst()` invocation:
+
+
+Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 10, connection limit: 5)
+    at ei.handleRequestError (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async Promise.all (index 0)
+    at async M (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\.next\server\app\(app)\page.js:1:9434) {
+  code: 'P2024',
+  meta: { modelName: 'Farm', connection_limit: 5, timeout: 10 },
+  clientVersion: '6.19.3',
+  digest: '2703717832'
+}
+PrismaClientKnownRequestError: 
+Invalid `prisma.farm.findFirst()` invocation:
+
+
+Timed out fetching a new connection from the connection pool. More info: http://pris.ly/d/connection-pool (Current connection pool timeout: 10, connection limit: 5)
+    at ei.handleRequestError (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:7268)
+    at ei.handleAndLogRequestError (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:6593)
+    at ei.request (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:121:6300)
+    at async a (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\node_modules\@prisma\client\runtime\library.js:130:9551)
+    at async Promise.all (index 0)
+    at async M (C:\Users\Yene\Desktop\STEMs Prof Files\Sample Projects\stem2026\hencount\.next\server\app\(app)\page.js:1:9434) {
+  code: 'P2024',
+  meta: { modelName: 'Farm', connection_limit: 5, timeout: 10 },
+  clientVersion: '6.19.3',
+  digest: '2703717832'
+}

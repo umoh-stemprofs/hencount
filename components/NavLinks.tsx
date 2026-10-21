@@ -1,22 +1,31 @@
 "use client";
 
-// Sidebar and bottom navigation (design.md §3: desktop left sidebar 240 px,
-// phone bottom nav with 4 items). Active item = accent + word, never color
-// alone; aria-current marks it for screen readers.
+// Sidebar and phone bottom navigation (DESIGN.md "Layout & Spacing" +
+// docs/design.md §3). Active item = solid ochre pill with white text and
+// aria-current, never colour alone; the phone bottom bar carries 16px labels
+// because DESIGN.md sets an absolute 16px floor on every text element.
 import {
+  Banknote,
   CloudSun,
   Egg,
-  LayoutDashboard,
+  Home,
   Settings,
-  Store,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ITEMS = [
-  { href: "/", label: "Dashboard", Icon: LayoutDashboard },
+export interface NavItem {
+  href: string;
+  label: string;
+  Icon: LucideIcon;
+}
+
+/** The words are the mockups'. /market keeps its URL; only the label changed. */
+export const ITEMS: NavItem[] = [
+  { href: "/", label: "Home", Icon: Home },
   { href: "/eggs", label: "Eggs", Icon: Egg },
-  { href: "/market", label: "Market", Icon: Store },
+  { href: "/market", label: "Prices", Icon: Banknote },
   { href: "/weather", label: "Weather", Icon: CloudSun },
   { href: "/settings", label: "Settings", Icon: Settings },
 ];
@@ -34,7 +43,7 @@ export function NavLinks({ variant }: { variant: "sidebar" | "bottom" }) {
 
   if (variant === "sidebar") {
     return (
-      <ul className="space-y-1">
+      <ul className="flex flex-col gap-space-xs">
         {items.map(({ href, label, Icon }) => {
           const active = isActive(pathname, href);
           return (
@@ -42,14 +51,14 @@ export function NavLinks({ variant }: { variant: "sidebar" | "bottom" }) {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`inline-flex h-12 w-full items-center gap-3 rounded-input px-3 text-base font-medium ${
+                className={`flex h-14 items-center gap-space-sm rounded-xl px-space-md text-body-lg-bold transition-colors ${
                   active
-                    ? "bg-accent/10 text-accent"
-                    : "text-muted hover:bg-bg hover:text-text"
+                    ? "bg-accent text-white"
+                    : "text-muted hover:bg-[#E0E8FF] hover:text-text"
                 }`}
               >
-                <Icon className="h-5 w-5" aria-hidden="true" />
-                {label}
+                <Icon className="h-6 w-6 shrink-0" aria-hidden="true" />
+                <span>{label}</span>
               </Link>
             </li>
           );
@@ -67,12 +76,12 @@ export function NavLinks({ variant }: { variant: "sidebar" | "bottom" }) {
             <Link
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium ${
+              className={`flex h-full min-h-[64px] flex-col items-center justify-center gap-1 px-1 py-2 text-body-base font-semibold transition-colors ${
                 active ? "text-accent" : "text-muted"
               }`}
             >
-              <Icon className="h-5 w-5" aria-hidden="true" />
-              {label}
+              <Icon className="h-6 w-6" aria-hidden="true" />
+              <span className="truncate">{label}</span>
             </Link>
           </li>
         );

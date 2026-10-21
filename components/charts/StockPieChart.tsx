@@ -50,11 +50,13 @@ export default function StockPieChart({
               if (!active || !slice) return null;
               return (
                 <div className="rounded-input border border-border bg-surface px-3 py-2 shadow-card">
-                  <p className="text-sm font-medium text-text">{slice.name}</p>
-                  <p className="text-sm tabular-nums text-text">
+                  <p className="text-body-base font-medium text-text">
+                    {slice.name}
+                  </p>
+                  <p className="text-body-base tabular-nums text-text">
                     {formatNaira(slice.valueKobo)}
                   </p>
-                  <p className="text-xs tabular-nums text-muted">
+                  <p className="text-body-base tabular-nums text-muted">
                     {slice.stockEggs} eggs in stock
                   </p>
                 </div>
@@ -69,19 +71,18 @@ export default function StockPieChart({
         {slices.map((slice, index) => (
           <li
             key={slice.name}
-            className="flex items-center justify-between gap-2 text-sm"
+            className="flex items-center justify-between gap-2 text-body-base"
           >
-            <span className="flex min-w-0 items-center gap-2">
-              <span
-                className="h-3 w-3 shrink-0 rounded-full"
-                style={{
-                  backgroundColor: SERIES_COLORS[index % SERIES_COLORS.length],
-                }}
-                aria-hidden="true"
-              />
+            <span className="flex min-w-0 items-center gap-2">            <span
+              className="h-3.5 w-3.5 shrink-0 rounded-full"
+              style={{
+                backgroundColor: SERIES_COLORS[index % SERIES_COLORS.length],
+              }}
+              aria-hidden="true"
+            />
               <span className="truncate text-text">{slice.name}</span>
             </span>
-            <span className="shrink-0 tabular-nums text-muted">
+            <span className="shrink-0 tabular-nums font-semibold text-text">
               {formatNaira(slice.valueKobo)}
             </span>
           </li>

@@ -22,8 +22,8 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-xl">
       <header>
-        <h1 className="text-2xl font-semibold text-text">Farm settings</h1>
-        <p className="mt-1 max-w-[70ch] leading-6 text-muted">
+        <h1 className="text-headline-lg tracking-tight text-text">Settings</h1>
+        <p className="mt-1 max-w-[70ch] text-body-lg leading-7 text-muted">
           Your farm&apos;s coordinates drive the weather, and the feed price
           drives feed cost and profit.
         </p>

@@ -1,22 +1,21 @@
 "use client";
 
 // Login form. The server action returns one plain sentence on failure;
-// nothing crashes (design.md §6).
-import { AlertCircle } from "lucide-react";
+// nothing crashes (docs/design.md §6). Field styling comes from the shared
+// primitives so the 54px input and 18px permanent label cannot drift.
+import { AlertCircle, LogIn } from "lucide-react";
 import { useFormState } from "react-dom";
 import { loginAction } from "@/app/actions/auth";
 import { PasswordInput } from "./PasswordInput";
-
-const inputClass =
-  "mt-1 h-12 w-full rounded-input border border-border bg-surface px-3 text-base text-text placeholder:text-muted";
+import { alertTone, btnPrimary, fieldLabel, input } from "./ui";
 
 export function LoginForm() {
   const [state, formAction] = useFormState(loginAction, { error: null });
 
   return (
-    <form action={formAction} className="mt-6 space-y-4">
+    <form action={formAction} className="mt-space-lg space-y-space-md">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-text">
+        <label htmlFor="email" className={fieldLabel}>
           Email
         </label>
         <input
@@ -25,8 +24,8 @@ export function LoginForm() {
           type="email"
           autoComplete="email"
           required
-          className={inputClass}
-          placeholder="you@example.com"
+          className={`${input} mt-1`}
+          placeholder="farmer.john@farmmail.ng"
         />
       </div>
 
@@ -38,19 +37,14 @@ export function LoginForm() {
       />
 
       {state.error && (
-        <p
-          role="alert"
-          className="inline-flex items-start gap-2 rounded-input bg-danger-bg px-3 py-2 text-sm font-medium text-danger"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p role="alert" className={alertTone.danger}>
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           {state.error}
         </p>
       )}
 
-      <button
-        type="submit"
-        className="h-12 w-full rounded-input bg-accent px-4 text-base font-semibold text-white"
-      >
+      <button type="submit" className={`${btnPrimary} w-full`}>
+        <LogIn className="h-6 w-6" aria-hidden="true" />
         Log in
       </button>
     </form>

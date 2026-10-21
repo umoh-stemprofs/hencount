@@ -1,20 +1,34 @@
 "use client";
 
-// Sell eggs (docs/03-hencount.md page 6): eggs sold, price per tray
-// prefilled from the market, trays and total shown before saving. A sale
-// larger than the stock is refused on the server with one sentence.
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+// Sell eggs (docs/03-hencount.md page 6), built to
+// stitch_.../hencount_sell_eggs_desktop: a tray stepper with 56x56 tap
+// targets (one tap = one tray of 30), the market price prefilled, and the
+// running total at display-stat so it can be read before saving.
+//
+// A sale larger than the stock is refused on the server with one sentence —
+// the stepper does not silently clamp, because the server is the only judge
+// and its sentence is the documented behaviour.
+import { AlertCircle, CheckCircle2, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { sellEggsAction, type SaleState } from "@/app/actions/eggs";
 import { EGGS } from "@/lib/config";
 import { formatNaira } from "@/lib/dates";
+import {
+  alertTone,
+  btnPrimary,
+  btnSecondary,
+  card,
+  fieldLabel,
+  helper,
+  input,
+} from "./ui";
 
 const INITIAL: SaleState = { error: null, saved: false, message: null };
 
-const inputClass =
-  "mt-1 h-12 w-full rounded-input border border-border bg-surface px-3 text-base tabular-nums text-text";
+const stepperBtn =
+  "inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-card border-2 border-border-strong bg-surface text-text transition-colors hover:bg-bg active:brightness-95";
 
 /** "4.2" for 126 eggs — one decimal is enough to read at a glance. */
 function formatTrays(eggs: number): string {
@@ -46,30 +60,30 @@ export function SellEggsForm({
   const price = Number(priceNaira) || 0;
   const totalKobo = Math.round((eggsSold / EGGS.perTray) * price * 100);
 
+  const bumpEggs = (by: number) => {
+    setEdited(true);
+    const current = Number(eggs) || 0;
+    setEggs(String(Math.max(1, current + by)));
+  };
+
   if (state.saved) {
     return (
-      <div className="mt-6 rounded-card border border-border bg-surface p-6 shadow-card">
+      <div className={`${card} mt-6`}>
         <p
           role="status"
-          className="inline-flex items-center gap-2 text-lg font-semibold text-success"
+          className="inline-flex items-center gap-2 text-headline-lg text-success"
         >
-          <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+          <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           {state.message}
         </p>
-        <p className="mt-2 text-base leading-6 text-muted">
+        <p className="mt-2 text-body-lg leading-7 text-muted">
           The stock below is lower by what you just sold.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/eggs"
-            className="inline-flex h-12 items-center rounded-input bg-accent px-4 text-base font-semibold text-white"
-          >
+        <div className="mt-space-lg flex flex-wrap gap-space-sm">
+          <Link href="/eggs" className={btnPrimary}>
             Back to flocks
           </Link>
-          <Link
-            href={`/eggs/${flockId}/advice`}
-            className="inline-flex h-12 items-center rounded-input border border-border bg-surface px-4 text-base font-semibold text-text hover:bg-bg"
-          >
+          <Link href={`/eggs/${flockId}/advice`} className={btnSecondary}>
             See advice
           </Link>
         </div>
@@ -78,41 +92,52 @@ export function SellEggsForm({
   }
 
   return (
-    <form
-      action={formAction}
-      className="mt-6 max-w-[560px] rounded-card border border-border bg-surface p-6 shadow-card"
-    >
+    <form action={formAction} className={`${card} mt-6 max-w-[560px]`}>
       <input type="hidden" name="flockId" value={flockId} />
 
       <div>
-        <label htmlFor="sale-eggs" className="block text-sm font-medium text-text">
+        <label htmlFor="sale-eggs" className={fieldLabel}>
           Eggs sold
         </label>
-        <input
-          id="sale-eggs"
-          name="eggs"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          step={1}
-          value={eggs}
-          onChange={(event) => {
-            setEdited(true);
-            setEggs(event.target.value);
-          }}
-          placeholder="90"
-          className={inputClass}
-        />
-        <p className="mt-1 text-sm text-muted">
-          {stock} eggs in stock for this flock.
-        </p>
+        <div className="mt-2 flex items-center gap-space-sm">
+          <button
+            type="button"
+            aria-label="Decrease by one tray"
+            onClick={() => bumpEggs(-EGGS.perTray)}
+            className={stepperBtn}
+          >
+            <Minus className="h-6 w-6" aria-hidden="true" />
+          </button>
+          <input
+            id="sale-eggs"
+            name="eggs"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            step={1}
+            value={eggs}
+            onChange={(event) => {
+              setEdited(true);
+              setEggs(event.target.value);
+            }}
+            placeholder="90"
+            className={`${input} h-16 flex-1 text-center text-display-stat`}
+          />
+          <button
+            type="button"
+            aria-label="Increase by one tray"
+            onClick={() => bumpEggs(EGGS.perTray)}
+            className={stepperBtn}
+          >
+            <Plus className="h-6 w-6" aria-hidden="true" />
+          </button>
+          <span className="text-body-lg-bold text-muted">eggs</span>
+        </div>
+        <p className={helper}>{stock} eggs in stock for this flock.</p>
       </div>
 
-      <div className="mt-4">
-        <label
-          htmlFor="sale-price"
-          className="block text-sm font-medium text-text"
-        >
+      <div className="mt-space-lg">
+        <label htmlFor="sale-price" className={fieldLabel}>
           Price per tray (₦)
         </label>
         <input
@@ -127,34 +152,34 @@ export function SellEggsForm({
             setEdited(true);
             setPriceNaira(event.target.value);
           }}
-          className={inputClass}
+          className={`${input} mt-1 tabular-nums`}
         />
-        <p className="mt-1 text-sm text-muted">
+        <p className={helper}>
           Prefilled from today&apos;s market price. Change it if you got a
           different price.
         </p>
       </div>
 
-      <p className="mt-4 rounded-input bg-bg px-3 py-2 text-base text-text">
-        {eggsSold} eggs = <strong className="tabular-nums">{formatTrays(eggsSold)}</strong>{" "}
-        trays · total{" "}
-        <strong className="tabular-nums">{formatNaira(totalKobo)}</strong>
-      </p>
+      {/* The mockup's running total: big, isolated, read before saving. */}
+      <div className="mt-space-lg rounded-card bg-[#F1F3FF] p-space-lg">
+        <p className="text-label-base text-muted">Total from this sale</p>
+        <p className="text-display-stat tabular-nums tracking-tight text-text">
+          {formatNaira(totalKobo)}
+        </p>
+        <p className="text-body-base text-muted">
+          {eggsSold} eggs = <strong className="tabular-nums">{formatTrays(eggsSold)}</strong>{" "}
+          trays
+        </p>
+      </div>
 
       {visibleError && (
-        <p
-          role="alert"
-          className="mt-4 inline-flex items-start gap-2 rounded-input bg-danger-bg px-3 py-2 text-sm font-medium text-danger"
-        >
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+        <p role="alert" className={`mt-space-lg ${alertTone.danger}`}>
+          <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
           {visibleError}
         </p>
       )}
 
-      <button
-        type="submit"
-        className="mt-6 h-12 w-full rounded-input bg-accent px-4 text-base font-semibold text-white sm:w-auto sm:px-6"
-      >
+      <button type="submit" className={`${btnPrimary} mt-space-lg w-full sm:w-auto`}>
         Save sale
       </button>
     </form>
